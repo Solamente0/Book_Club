@@ -17,6 +17,8 @@ public:
     void AddItem(const Book& newbook);
     void RemoveItem(int bookId);
     void CalculateTotal();
+    void ApplyDiscount(double percentage);
+    void CheckOut();
 
 
     const QVector<Book>& getItems() const;

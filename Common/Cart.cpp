@@ -28,8 +28,20 @@ void Cart::CalculateTotal(){
     }
     TotalPrice = sum;
 };
+void Cart::ApplyDiscount(double percentage) {
+    if (percentage > 0.0 && percentage <= 100.0) {
+        double discountAmount = TotalPrice * (percentage / 100.0);
+        TotalPrice -= discountAmount;
+    };
+}
+void Cart::CheckOut() {
+    if (Items.isEmpty()) {
+        qDebug() << "Shopping cart is empty. Cannot checkout.";
+        return;
+    }
 
-
+    qDebug() << "Checking out" << Items.size() << "items. Total Paid:" << TotalPrice;
+}
 const QVector<Book>& Cart::getItems() const {
      return Items;
 };
