@@ -3,7 +3,7 @@ add_library(common_lib
     Book.h
     Book.cpp
 add_library(common STATIC
-    member.h,member.cpp,Review.h,Review.cpp
+    member.h,member.cpp,Review.h,Review.cpp,Cart.h,Cart.cpp
 )
 
 # Export include directory
