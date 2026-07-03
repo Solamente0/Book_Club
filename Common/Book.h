@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QVector>
+#include <QDateTime>
 
 #include "Review.h"
 
@@ -22,46 +23,63 @@ enum class genre {
 class Book
 {
 private:
-    const int Id;
+    int Id;
     QString Title;
     QString Author;
+    QString PublisherUsername;
     genre Genre;
+    QString Description;
     double Price;
     double Discount;
+    QString imagePath;
+    QString pdfPath;
     bool isActive;
-    static int counter;
-
+    QDateTime publishDate;
+    int salesCount;
+    double averageRating;
     QVector<Review> Reviews;
 
 public:
-    Book(int Id,
-         const QString& Title,
-         const QString& Author,
+    Book(const QString& title,
+         const QString& author,
+         QString pubUsername,
          genre Genre,
+         QString descrip,
          double Price,
-         double Discount,
-         bool isActive);
+         double Discount
+        );
 
     ~Book() = default;
 
     int getId() const;
     QString getTitle() const;
     QString getAuthor() const;
+    QString getPublisherUsername() const;
+    QString getDiscription() const;
     genre getGenre() const;
     double getPrice() const;
     double getDiscount() const;
-    bool getisACTIVE() const;
-    int geBookCount() const;
+    bool getisActive() const;
+    QString getImagePath() const;
+    QString getPdfPath() const;
+    QDateTime getPublishDate() const;
+    int getSalesCount() const;
+    double getAverageRating() const;
+    double getFinalPrice() const;
 
+    void setId(const int id);
     void setTitle(const QString& newTitle);
     void setAuthor(const QString& newAuthor);
     void setGenre(genre newGenre);
     void setPrice(double newPrice);
     void setDiscount(double newDiscount);
-    void setisACTIVE(bool newisActive);
-
-    double getAverageRating() const;
-    double getFinalPrice() const;
+    void setPublisherUsername(const QString &newUsername);
+    void setDescription(const QString &description);
+    void setImagePath(const QString &newpath);
+    void setPdfPath(const QString &newpath);
+    void setisActive(bool newisActive);
+    void setPublishDate(const QDateTime &date);
+    void setSalesCount(int count);
 
     void addReview(const Review& review);
 };
