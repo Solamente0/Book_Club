@@ -1,6 +1,8 @@
 add_library(common STATIC
     member.h
     member.cpp
+    User.h
+    User.cpp
     Book.h
     Book.cpp
     Review.h
