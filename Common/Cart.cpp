@@ -8,7 +8,6 @@ Cart::Cart() {
 
 void Cart::AddItem(const Book& newbook){
     Items.append(newbook);
-    CalculateTotal();
 };
 
 void Cart::RemoveItem(int bookId){
@@ -18,21 +17,40 @@ void Cart::RemoveItem(int bookId){
             break;
         };
     }
-    CalculateTotal();
+};
+const QVector<Book>& Cart::getItems() const {
+     return Items;
+};
+double Cart::getEachBookPrice(){
+    for (const Book& book : Items){
+        return book.getFinalPrice();
+    }
 };
 
-void Cart::CalculateTotal(){
+void Cart::CalculateTotalBeforeDiscount(){
     double sum = 0.0;
     for (const Book& eachbook : Items) {
         sum =sum+eachbook.getFinalPrice(); 
     }
-    TotalPrice = sum;
+    double totalpricebeforediscount = sum;
 };
+double Cart::getPriceBeforeDiscount(){
+    return totalpricebeforediscount;
+}
 void Cart::ApplyDiscount(double percentage) {
     if (percentage > 0.0 && percentage <= 100.0) {
-        double discountAmount = TotalPrice * (percentage / 100.0);
+        double discountAmount = getPriceBeforeDiscount() * (percentage / 100.0);
         TotalPrice -= discountAmount;
     };
+};
+int Cart::getNumberofitems(){
+    Items.counter();
+}
+double Cart::getCalculatediscountamount(){
+       return getPriceBeforeDiscount()-TotalPrice;
+}
+double Cart::getFinalPricetobepayed(){
+    return TotalPrice;
 }
 void Cart::CheckOut() {
     if (Items.isEmpty()) {
@@ -42,9 +60,4 @@ void Cart::CheckOut() {
 
     qDebug() << "Checking out" << Items.size() << "items. Total Paid:" << TotalPrice;
 }
-const QVector<Book>& Cart::getItems() const {
-     return Items;
-};
-double Cart::getTotalPrice() const {
-    return TotalPrice;
-};
+

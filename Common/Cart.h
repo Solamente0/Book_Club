@@ -16,13 +16,19 @@ public:
 
     void AddItem(const Book& newbook);
     void RemoveItem(int bookId);
-    void CalculateTotal();
+    const QVector<Book>& getItems() ;
+    double getEachBookPrice();
+    void CalculateTotalBeforeDiscount();
+    double getPriceBeforeDiscount();
+    int getNumberofitems();
     void ApplyDiscount(double percentage);
+    double getcalculatediscountamount();
+    double getFinalPricetobepayed();
+
     void CheckOut();
 
 
-    const QVector<Book>& getItems() const;
-    double getTotalPrice() const;
+
 };
 
 #endif // CART_H
