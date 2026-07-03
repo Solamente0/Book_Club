@@ -7,6 +7,7 @@
 #include "Book.h"
 #include "Member.h"
 #include "Cart.h"
+#include "shelf.h"
 
 class User: public Member
 {
@@ -16,6 +17,7 @@ private:
     QVector<Book> savedBooks;
     Cart cart;
     QMap<int, int> lastReadPages;
+    QVector<Shelf> shelves;
     bool firstLogin;
 public:
     User();
@@ -35,6 +37,11 @@ public:
     Cart& getCart();
     int getlastReadPage(int bookId) const;
     void setLastReadPage(int bookId, int page);
+    QVector<Shelf> getShelves() const;
+    void addShelf(const Shelf &shelf);
+    void removeShelf(const QString &shelfName);
+    void renameShelf(const QString &oldName, const QString &newName);
+    Shelf* findShelf(const QString &name); 
 
     bool isFirstLogin() const;
     void setFirstLogin(bool first);

@@ -5,7 +5,7 @@ User::User():Member(), firstLogin(true){}
 User::User(QString username, QString password, QString securityAnswer)
     : Member(username, password, securityAnswer), firstLogin(true) {}
 
-QString User::role() const { return "User"; }
+QString User::role() const { return "User";}
 
 QVector<genre> User::getfavoriteGenres() const {return favoriteGenres;}
 void User::setFavoriteGenres(const QVector<genre> &genres) { favoriteGenres = genres; }
@@ -59,6 +59,35 @@ int User::getlastReadPage(int bookId) const
 void User::setLastReadPage(int bookId, int page)
 {
     lastReadPages[bookId] = page;
+}
+
+QVector<Shelf> User::getShelves() const{ return shelves;}
+
+void User::addShelf(const Shelf &shelf) {
+    if (!findShelf(shelf.getName()))
+        shelves.append(shelf);
+}
+
+void User::removeShelf(const QString &shelfName) {
+    for (int i = 0; i < shelves.size(); ++i) {
+        if (shelves[i].getName() == shelfName) {
+            shelves.removeAt(i);
+            break;
+        }
+    }
+}
+
+void User::renameShelf(const QString &oldName, const QString &newName) {
+    Shelf *shelf = findShelf(oldName);
+    if (shelf)
+        shelf->setName(newName);
+}
+
+Shelf* User::findShelf(const QString &name) {
+    for (Shelf &s : shelves)
+        if (s.getName() == name)
+            return &s;
+    return nullptr;
 }
 
 bool User::isFirstLogin() const { return firstLogin; }
