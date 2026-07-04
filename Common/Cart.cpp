@@ -1,4 +1,3 @@
-
 #include "Book.h"
 #include "Cart.h"
 
@@ -59,7 +58,7 @@ double Cart::getPriceBeforeDiscount() {
     return TotalBeforeDiscount;
 }
 
-double Cart::ApplyDiscount(double percentage) {
+void Cart::ApplyDiscount(double percentage) {
     if (percentage > 0.0 && percentage <= 100.0) {
         double discountAmount = getPriceBeforeDiscount() * (percentage / 100.0);
         TotalPrice = getPriceBeforeDiscount()- discountAmount;
