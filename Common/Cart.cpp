@@ -53,17 +53,16 @@ void Cart::CalculateTotalBeforeDiscount() {
         sum = sum + eachbook.getFinalPrice(); 
     }
     TotalBeforeDiscount = sum; 
-    TotalPrice = sum; 
 }
 
 double Cart::getPriceBeforeDiscount() {
     return TotalBeforeDiscount;
 }
 
-void Cart::ApplyDiscount(double percentage) {
+double Cart::ApplyDiscount(double percentage) {
     if (percentage > 0.0 && percentage <= 100.0) {
         double discountAmount = getPriceBeforeDiscount() * (percentage / 100.0);
-        TotalPrice = TotalBeforeDiscount - discountAmount;
+        TotalPrice = getPriceBeforeDiscount()- discountAmount;
     }
 }
 
