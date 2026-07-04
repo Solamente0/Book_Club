@@ -1,14 +1,18 @@
 add_library(common STATIC
-    member.h
-    member.cpp
+    Member.h
+    Member.cpp
     User.h
     User.cpp
+    Publisher.h
+    Publisher.cpp
     Book.h
     Book.cpp
     Review.h
     Review.cpp
-    cart.h
-    cart.cpp
+    Cart.h
+    Cart.cpp
+    Shelf.h
+    Shelf.cpp
 )
 
 target_include_directories(common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
