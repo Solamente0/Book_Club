@@ -5,7 +5,7 @@ User::User():Member(), firstLogin(true){}
 User::User(const QString& username, const QString& password, const QString& securityAnswer)
     : Member(username, password, securityAnswer), firstLogin(true) {}
 
-QString User::role() const { return "User";}
+QString User::role() const{ return "User";}
 
 QVector<genre> User::getfavoriteGenres() const {return favoriteGenres;}
 void User::setFavoriteGenres(const QVector<genre> &genres) { favoriteGenres = genres; }
