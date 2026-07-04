@@ -9,7 +9,7 @@ private:
     QVector<Book> Items;
     double TotalPrice; 
     double TotalBeforeDiscount; //بعدا تو یه تابع نیازش دارم
-
+    bool isBookInCart(int bookId);
 public:
     Cart();
     ~Cart() = default;

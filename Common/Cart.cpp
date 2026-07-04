@@ -1,4 +1,4 @@
-#include <QDebug>
+
 #include "Book.h"
 #include "Cart.h"
 
@@ -6,22 +6,33 @@ Cart::Cart() {
     TotalPrice = 0.0;
     TotalBeforeDiscount = 0.0;
 }
-
-void Cart::AddItem(const Book& newbook) {
+bool Cart::isBookInCart(int bookId) {
+    for (int i = 0; i < Items.size(); ++i) {
+        if (Items[i].getId() == bookId) {
+            return true;
+        }
+    }
+    return false;
+}
+bool Cart::AddItem(const Book& newbook) {
+    if (isBookInCart(newbook.getId())) {
+        return false; // کتاب از قبل توی سبد هست
+    }
     Items.append(newbook);
     CalculateTotalBeforeDiscount();
+    return true;
 }
 
-void Cart::RemoveItem(int bookId) {
+bool Cart::RemoveItem(int bookId) {
     for (int i = 0; i < Items.size(); ++i) {
         if (Items[i].getId() == bookId) {
             Items.removeAt(i);
-            break;
+            CalculateTotalBeforeDiscount();
+            return true;
         }
     }
-    CalculateTotalBeforeDiscount();
+    return false; // کتاب توی سبد پیدا نشد
 }
-
 const QVector<Book>& Cart::getItems() const {
     return Items;
 }
@@ -68,10 +79,12 @@ double Cart::getFinalPricetobepayed() {
     return TotalPrice;
 }
 
-void Cart::CheckOut() {
+bool Cart::CheckOut() {
     if (Items.isEmpty()) {
-        qDebug() << "Shopping cart is empty. Cannot checkout.";
-        return;
+        return false; // سبد خالیه
     }
-    qDebug() << "cart is not empty";
-};
+    Items.clear();
+    TotalBeforeDiscount = 0.0;
+    DiscountPercentage = 0.0;
+    return true;
+}
