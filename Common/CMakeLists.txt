@@ -5,6 +5,8 @@ add_library(common STATIC
     User.cpp
     Publisher.h
     Publisher.cpp
+    Admin.h
+    Admin.cpp
     Book.h
     Book.cpp
     Review.h
