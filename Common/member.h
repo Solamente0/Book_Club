@@ -6,20 +6,22 @@
 class Member
 {
 private:
-    const int ID;
+    int ID;
     QString username;
     QString password;
     bool blocked;
     const QString securityAnswer;
 public:
-    Member(QString username, QString password, QString securityAnswer);
+    Member();
+    Member(const QString& username, const QString& password, const QString& securityAnswer);
     virtual ~Member() = default;
 
     int getId() const;
+    void setId(int id);
     QString getUsername() const;
-    void setUsername(const QString name);
+    void setUsername(const QString& name);
     QString getPassword() const;
-    void setPassword(const QString pass);
+    void setPassword(const QString& pass);
     QString getSecurityAnswer() const;
     bool isBlocked() const;
     void setBlocked(bool block);

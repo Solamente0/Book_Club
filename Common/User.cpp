@@ -2,7 +2,7 @@
 
 User::User():Member(), firstLogin(true){}
 
-User::User(QString username, QString password, QString securityAnswer)
+User::User(const QString& username, const QString& password, const QString& securityAnswer)
     : Member(username, password, securityAnswer), firstLogin(true) {}
 
 QString User::role() const { return "User";}

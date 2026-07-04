@@ -21,7 +21,7 @@ private:
     bool firstLogin;
 public:
     User();
-    User(QString username, QString hashedPassword, QString securityAnswer);
+    User(const QString& username, const QString& hashedPassword, const QString& securityAnswer);
     QString role() const override;
 
     QVector<genre> getfavoriteGenres() const;
