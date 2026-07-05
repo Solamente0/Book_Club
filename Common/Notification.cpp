@@ -6,6 +6,9 @@ Notification::Notification()
 Notification::Notification(const QString &message)
     :message(message), seen(false), createdAt(QDateTime::currentDateTime()) {};
 
+int Notification::getId() const{ return id;}
+void Notification::setId(const int i) { id = i;}
+
 QString Notification::getMessage() const { return message; }
 
 bool Notification::isRead() const { return seen; }

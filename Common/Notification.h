@@ -7,12 +7,16 @@
 class Notification
 {
 private:
+    int id;
     QString message;
     bool seen;
     QDateTime createdAt;
 public:
     Notification();
     Notification(const QString& message);
+
+    int getId() const;
+    void setId(const int i);
 
     QString getMessage() const;
 
