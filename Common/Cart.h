@@ -1,28 +1,30 @@
 #ifndef CART_H
 #define CART_H
-
 #include <QVector>
 #include "Book.h"
 
 class Cart {
 private:
     QVector<Book> Items;
-    double TotalPrice;
+
+    bool isBookInCart(int bookId);
 
 public:
     Cart();
-    ~Cart()=default;
+    ~Cart() = default;
 
+    bool AddItem(const Book& newbook);
+    bool RemoveItem(int bookId);
 
-    void AddItem(const Book& newbook);
-    void RemoveItem(int bookId);
-    void Checkout();
-    void ApplyDiscount(double percentage);
-    void CalculateTotal();
+    const QVector<Book>& getItems() const;
+    double showEachBookPrice();
+    int getNumberofitems();
 
+    double getTotalPrice();            
+    double getTotalDiscount();          
+    double getFinalPrice();            
+    double getTotaldiscountPercentage();
 
-    QVector<Book> getItems() const;
-    double getTotalPrice() const;
+    bool CheckOut();
 };
-
 #endif // CART_H
