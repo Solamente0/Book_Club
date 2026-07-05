@@ -1,94 +1,61 @@
 #include "Book.h"
 
-int Book::counter=0;
-
-Book::Book(int Id,
-           const QString& Title,
-           const QString& Author,
-           genre Genre,
-           double Price,
-           double Discount,
-           bool isActive)
-    : Id(Id),
+Book::Book(const QString& title,
+         const QString& author,
+         QString pubUsername,
+         genre Genre,
+         QString descrip,
+         double Price,
+         double Discount)
+    : Id(0),
       Title(Title),
       Author(Author),
+      PublisherUsername(pubUsername),
       Genre(Genre),
+      Description(descrip),
       Price(Price),
       Discount(Discount),
-      isActive(isActive),
+      isActive(true),
+      salesCount(0),
+      averageRating(0.0){}
 
+int Book::getId() const{ return Id;}
+QString Book::getTitle() const{return Title;}
+QString Book::getAuthor() const{return Author;}
+QString Book::getPublisherUsername() const{return PublisherUsername;}
+genre Book::getGenre() const{return Genre;}
+QString Book::getDiscription() const{return Description;}
+double Book::getPrice() const{return Price;}
+double Book::getDiscount() const{return Discount;}
+bool Book::getisActive() const{return isActive;}
+int Book::getSalesCount() const{return salesCount;}
+double Book::getAverageRating() const{return averageRating;}
+QString Book::getImagePath() const{return imagePath;}
+QString Book::getPdfPath() const{return pdfPath;}
+QDateTime Book::getPublishDate() const{return publishDate;}
+double Book::getFinalPrice() const
 {
-    ++counter;
-}
-
-int Book::getId() const
-{
-    return Id;
-}
-
-QString Book::getTitle() const
-{
-    return Title;
-}
-
-QString Book::getAuthor() const
-{
-    return Author;
-}
-
-genre Book::getGenre() const
-{
-    return Genre;
+    return Price * (1.0 - Discount / 100.0);
 }
 
-double Book::getPrice() const
+void Book::addReview(const Review& review)
 {
-    return Price;
+    Reviews.append(review);
 }
 
-double Book::getDiscount() const
-{
-    return Discount;
-}
-
-bool Book::getisACTIVE() const
-{
-    return isActive;
-}
-int Book::getBookCount(){
-    return counter;
-}
-void Book::setTitle(const QString& newTitle)
-{
-    Title = newTitle;
-}
-
-void Book::setAuthor(const QString& newAuthor)
-{
-    Author = newAuthor;
-}
-
-void Book::setGenre(genre newGenre)
-{
-    Genre = newGenre;
-}
-
-void Book::setPrice(double newPrice)
-{
-    if (newPrice >= 0.0)
-        Price = newPrice;
-}
-
-void Book::setDiscount(double newDiscount)
-{
-    if (newDiscount >= 0.0 && newDiscount <= 100.0)
-        Discount = newDiscount;
-}
-
-void Book::setisACTIVE(bool newisActive)
-{
-    isActive = newisActive;
-}
+void Book::setId(const int id) {Id= id;}
+void Book::setTitle(const QString& newTitle) {Title = newTitle;}
+void Book::setAuthor(const QString& newAuthor) {Author = newAuthor;}
+void Book::setPublisherUsername(const QString& newUsername) {PublisherUsername = newUsername;}
+void Book::setGenre(genre newGenre){Genre = newGenre;}
+void Book::setPrice(double newPrice){ Price = newPrice;}
+void Book::setDiscount(double newDiscount) {Discount = newDiscount;}
+void Book::setDescription(const QString& description) {Description = description;}
+void Book::setImagePath(const QString& newpath) {imagePath = newpath;}
+void Book::setPdfPath(const QString& newpath) {pdfPath = newpath;}
+void Book::setPublishDate(const QDateTime& date) {publishDate = date;}
+void Book::setisActive(bool newisActive) {isActive = newisActive;}
+void Book::setSalesCount(int count) {salesCount = count;}
 
 double Book::getAverageRating() const
 {
@@ -101,14 +68,4 @@ double Book::getAverageRating() const
         sum += review.getStars();
 
     return sum / Reviews.size();
-}
-
-double Book::getFinalPrice() const
-{
-    return Price * (1.0 - Discount / 100.0);
-}
-
-void Book::addReview(const Review& review)
-{
-    Reviews.append(review);
 }

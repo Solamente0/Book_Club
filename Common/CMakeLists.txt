@@ -1,13 +1,21 @@
-# Create common library
-add_library(common_lib
+add_library(common STATIC
+    Member.h
+    Member.cpp
+    User.h
+    User.cpp
+    Publisher.h
+    Publisher.cpp
+    Admin.h
+    Admin.cpp
     Book.h
     Book.cpp
-add_library(common STATIC
-    member.h,member.cpp,Review.h,Review.cpp
+    Review.h
+    Review.cpp
+    Cart.h
+    Cart.cpp
+    Shelf.h
+    Shelf.cpp
 )
 
-# Export include directory
-target_include_directories(common_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-
-# Link Qt libraries
-target_link_libraries(common_lib PUBLIC Qt6::Core)
+target_include_directories(common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(common PUBLIC Qt6::Core)
