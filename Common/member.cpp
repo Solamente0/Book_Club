@@ -13,3 +13,34 @@ void Member::setPassword(const QString& pass) {password = pass;}
 QString Member::getSecurityAnswer() const{return securityAnswer;}
 bool Member::isBlocked() const{return blocked;}
 void Member::setBlocked(bool block) {blocked = block;} 
+QDateTime Member::getRegisterDate() const { return registerDate; }
+void Member::setRegisterDate(const QDateTime &date) { registerDate = date; }
+
+QVector<Notification> Member::getNotifications() const{ return notifications;}
+
+void Member::addNotification(const Notification &notification) {
+    notifications.append(notification);
+}
+
+void Member::markNotificationRead(int notificationId){
+    for (Notification &n : notifications) {
+        if (n.getId() == notificationId) {
+            n.markAsRead();
+            break;
+        }
+    }
+}
+
+void Member::markAllNotificationsRead() {
+    for (Notification &n : notifications)
+        n.markAsRead();
+}
+
+int Member::unreadNotificationsCount() const{
+    int count = 0;
+    for (const Notification &n : notifications)
+        if (!n.isRead())
+            count++;
+    return count;
+}
+
