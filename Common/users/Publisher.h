@@ -2,7 +2,7 @@
 #define PUBLISHER_H
 
 #include "Member.h"
-#include "Book.h"
+#include "../models/Book.h"
 #include <QVector>
 
 class Publisher : public Member

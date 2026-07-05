@@ -5,7 +5,7 @@
 #include <QDateTime>
 #include <QVector>
 
-#include "Notification.h"
+#include "../models/Notification.h"
 
 class Member
 {

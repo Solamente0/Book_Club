@@ -1,22 +1,22 @@
 add_library(common STATIC
-    Member.h
-    Member.cpp
-    User.h
-    User.cpp
-    Publisher.h
-    Publisher.cpp
-    Admin.h
-    Admin.cpp
-    Book.h
-    Book.cpp
-    Review.h
-    Review.cpp
-    Cart.h
-    Cart.cpp
-    Shelf.h
-    Shelf.cpp
-    Notification.h
-    Notification.cpp
+    models/Book.h
+    models/Book.cpp
+    models/Review.h
+    models/Review.cpp
+    models/Cart.h
+    models/Cart.cpp
+    models/Shelf.h
+    models/Shelf.cpp
+    models/Notification.h
+    models/Notification.cpp
+    users/Member.h
+    users/Member.cpp
+    users/User.h
+    users/User.cpp
+    users/Publisher.h
+    users/Publisher.cpp
+    users/Admin.h
+    users/Admin.cpp
 )
 
 target_include_directories(common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

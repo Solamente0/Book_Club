@@ -4,10 +4,10 @@
 #include <QVector>
 #include <QMap>
 
-#include "Book.h"
+#include "../models/Book.h"
 #include "Member.h"
-#include "Cart.h"
-#include "shelf.h"
+#include "../models/Cart.h"
+#include "../models/Shelf.h"
 
 class User: public Member
 {
