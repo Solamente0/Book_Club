@@ -1,10 +1,8 @@
 #include "Book.h"
 #include "Cart.h"
 
-Cart::Cart() {
-    TotalPrice = 0.0;
-    TotalBeforeDiscount = 0.0;
-}
+Cart::Cart() {};
+
 bool Cart::isBookInCart(int bookId) {
     for (int i = 0; i < Items.size(); ++i) {
         if (Items[i].getId() == bookId) {
@@ -13,12 +11,12 @@ bool Cart::isBookInCart(int bookId) {
     }
     return false;
 }
+
 bool Cart::AddItem(const Book& newbook) {
     if (isBookInCart(newbook.getId())) {
         return false; // کتاب از قبل توی سبد هست
     }
     Items.append(newbook);
-    CalculateTotalBeforeDiscount();
     return true;
 }
 
@@ -26,55 +24,54 @@ bool Cart::RemoveItem(int bookId) {
     for (int i = 0; i < Items.size(); ++i) {
         if (Items[i].getId() == bookId) {
             Items.removeAt(i);
-            CalculateTotalBeforeDiscount();
             return true;
         }
     }
     return false; // کتاب توی سبد پیدا نشد
 }
+
 const QVector<Book>& Cart::getItems() const {
     return Items;
 }
 
-void Cart::showEachBookPrice() {
+double Cart::showEachBookPrice() {
     if (Items.isEmpty()) {
-        qDebug() << "cart is empty";
-        return;
+        return 0.0;
     }
     for (const Book& book : Items) {
-        qDebug() << "book" << book.getTitle() << "| price: " << book.getFinalPrice();
+        return book.getFinalPrice();
     }
 };
 
-void Cart::CalculateTotalBeforeDiscount() {
+int Cart::getNumberofitems() {
+    return Items.size();
+}
+
+double Cart::getTotalPrice() {
     double sum = 0.0;
     for (const Book& eachbook : Items) {
-        sum = sum + eachbook.getFinalPrice(); 
+        sum = sum + eachbook.getPrice();
     }
-    TotalBeforeDiscount = sum; 
-}
+    return sum;
+};   // جمع قیمت اصلی بدون تخفیف
 
-double Cart::getPriceBeforeDiscount() {
-    return TotalBeforeDiscount;
-}
-
-void Cart::ApplyDiscount(double percentage) {
-    if (percentage > 0.0 && percentage <= 100.0) {
-        double discountAmount = getPriceBeforeDiscount() * (percentage / 100.0);
-        TotalPrice = getPriceBeforeDiscount()- discountAmount;
+double Cart::getTotalDiscount() {
+    double sum = 0.0;
+    for (const Book& eachbook : Items) {
+        sum = sum + (eachbook.getPrice() - eachbook.getFinalPrice());
     }
-}
+    return sum;
+};   // جمع مقدار تخفیف
 
-int Cart::getNumberofitems() {
-    return Items.size(); 
-}
+double Cart::getFinalPrice() {
+    return getTotalPrice() - getTotalDiscount();
+};   // قیمت نهایی قابل پرداخت
 
-double Cart::getcalculatediscountamount() {
-    return getPriceBeforeDiscount() - TotalPrice;
-}
-
-double Cart::getFinalPricetobepayed() {
-    return TotalPrice;
+double Cart::getTotaldiscountPercentage() {
+    if (getTotalPrice() == 0.0) {
+        return 0.0;
+    }
+    return (getTotalDiscount() / getTotalPrice()) * 100.0;
 }
 
 bool Cart::CheckOut() {
@@ -82,7 +79,5 @@ bool Cart::CheckOut() {
         return false; // سبد خالیه
     }
     Items.clear();
-    TotalBeforeDiscount = 0.0;
-    DiscountPercentage = 0.0;
     return true;
 }
