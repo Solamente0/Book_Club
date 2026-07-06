@@ -61,3 +61,8 @@ compile_commands.json
 *.user
 *.user.*
 .vscode/
+
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
