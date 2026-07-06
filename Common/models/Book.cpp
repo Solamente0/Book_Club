@@ -29,7 +29,6 @@ double Book::getPrice() const{return Price;}
 double Book::getDiscount() const{return Discount;}
 bool Book::getisActive() const{return isActive;}
 int Book::getSalesCount() const{return salesCount;}
-double Book::getAverageRating() const{return averageRating;}
 QString Book::getImagePath() const{return imagePath;}
 QString Book::getPdfPath() const{return pdfPath;}
 QDateTime Book::getPublishDate() const{return publishDate;}
