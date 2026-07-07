@@ -9,6 +9,8 @@ add_library(common STATIC
     models/Shelf.cpp
     models/Notification.h
     models/Notification.cpp
+    models/Purchase.h
+    models/Purchase.cpp
     users/Member.h
     users/Member.cpp
     users/User.h
