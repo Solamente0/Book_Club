@@ -1,5 +1,7 @@
 add_executable(BookClubServer
-    # بقیه فایل‌ها رو خودت بعداً اینجا اضافه کن
+    Database.h
+    Database.cpp
+    main.cpp
 )
 
 target_link_libraries(BookClubServer PRIVATE
