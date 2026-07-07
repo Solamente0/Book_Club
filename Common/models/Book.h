@@ -82,6 +82,7 @@ public:
     void setSalesCount(int count);
 
     void addReview(const Review& review);
+    double calculateAverageRating() const;
 };
 
 #endif

@@ -57,7 +57,7 @@ void Book::setPublishDate(const QDateTime& date) {publishDate = date;}
 void Book::setisActive(bool newisActive) {isActive = newisActive;}
 void Book::setSalesCount(int count) {salesCount = count;}
 
-double Book::getAverageRating() const
+double Book::calculateAverageRating() const
 {
     if (Reviews.isEmpty())
         return 0.0;
