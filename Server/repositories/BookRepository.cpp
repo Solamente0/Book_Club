@@ -17,6 +17,7 @@ Book BookRepository::mapToBook(QSqlQuery &query)
     book.setSalesCount(query.value("sales_count").toInt());
     book.setAverageRating(query.value("average_rating").toDouble());
     book.setPublishDate(QDateTime::fromString(query.value("publish_date").toString(), Qt::ISODate));
+        book.setPublisherUsername(query.value("publisher_username").toString());
 
     QVector<Review> reviews = findReviews(book.getId());
     for (const Review &r : reviews)
@@ -49,11 +50,11 @@ bool BookRepository::save(int publisherId, Book &book) {
     QSqlQuery query = Database::instance().createQuery();
     query.prepare(
         "INSERT INTO books "
-        "(title, author, publisher_id, genre, description, "
+        "(title, author, publisher_id, publisher_username , genre, description, "
         "price, discount_percent, cover_image_path, pdf_file_path, "
         "is_active, sales_count, average_rating, publish_date) "
         "VALUES "
-        "(:title, :author, :publisher_id, :genre, :description, "
+        "(:title, :author, :publisher_id, :publisher_username, :genre, :description, "
         ":price, :discount, :cover, :pdf, "
         ":is_active, :sales_count, :avg_rating, :publish_date)"
     );
@@ -83,7 +84,12 @@ bool BookRepository::save(int publisherId, Book &book) {
 
 Book BookRepository::findById(int id) {
     QSqlQuery query = Database::instance().createQuery();
-    query.prepare("SELECT * FROM books WHERE id = :id");
+    query.prepare(
+        "SELECT b.*, p.username as publisher_username "
+        "FROM books b "
+        "JOIN members p ON b.publisher_id = p.id "
+        "WHERE b.id = :id"
+    );
     query.bindValue(":id", id);
 
     if (!query.exec() || !query.next())
@@ -96,8 +102,13 @@ QVector<Book> BookRepository::findAll()
 {
     QVector<Book> books;
     QSqlQuery query = Database::instance().createQuery();
+    query.prepare(
+        "SELECT b.*, p.username as publisher_username "
+        "FROM books b "
+        "JOIN members p ON b.publisher_id = p.id"
+    );
 
-    if (!query.exec("SELECT * FROM books"))
+    if (!query.exec())
         return books;
 
     while (query.next())
@@ -109,7 +120,12 @@ QVector<Book> BookRepository::findAll()
 QVector<Book> BookRepository::findAllActive() {
     QVector<Book> books;
     QSqlQuery query = Database::instance().createQuery();
-    query.prepare("SELECT * FROM books WHERE is_active = 1");
+    query.prepare(
+        "SELECT b.*, p.username as publisher_username "
+        "FROM books b "
+        "JOIN members p ON b.publisher_id = p.id "
+        "WHERE b.is_active = 1"
+    );
 
     if (!query.exec())
         return books;
@@ -124,7 +140,12 @@ QVector<Book> BookRepository::findByPublisher(int publisherId)
 {
     QVector<Book> books;
     QSqlQuery query = Database::instance().createQuery();
-    query.prepare("SELECT * FROM books WHERE publisher_id = :publisher_id");
+    query.prepare(
+        "SELECT b.*, p.username as publisher_username "
+        "FROM books b "
+        "JOIN members p ON b.publisher_id = p.id "
+        "WHERE b.publisher_id = :publisher_id"
+    );
     query.bindValue(":publisher_id", publisherId);
 
     if (!query.exec())
@@ -140,7 +161,12 @@ QVector<Book> BookRepository::findByGenre(genre g)
 {
     QVector<Book> books;
     QSqlQuery query = Database::instance().createQuery();
-    query.prepare("SELECT * FROM books WHERE genre = :genre AND is_active = 1");
+    query.prepare(
+        "SELECT b.*, p.username as publisher_username "
+        "FROM books b "
+        "JOIN members p ON b.publisher_id = p.id "
+        "WHERE b.genre = :genre AND b.is_active = 1"
+    );
     query.bindValue(":genre", genreToString(g));
 
     if (!query.exec())
@@ -157,13 +183,14 @@ QVector<Book> BookRepository::search(const QString &keyword)
     QVector<Book> books;
     QSqlQuery query = Database::instance().createQuery();
 
-        query.prepare(
-        "SELECT b.* FROM books b "
+    query.prepare(
+        "SELECT b.*, u.username as publisher_username "
+        "FROM books b "
         "JOIN users u ON b.publisher_id = u.id "
         "WHERE b.is_active = 1 AND ("
         "b.title  LIKE :keyword OR "
         "b.author LIKE :keyword OR "
-        "u.username LIKE :keyword" 
+        "u.username LIKE :keyword"
         ")"
     );
     query.bindValue(":keyword", "%" + keyword + "%");

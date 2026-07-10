@@ -26,6 +26,7 @@ private:
     int Id;
     QString Title;
     QString Author;
+    QString publisherUsername;
     genre Genre;
     QString Description;
     double Price;
@@ -62,6 +63,7 @@ public:
     int getSalesCount() const;
     double getAverageRating() const;
     double getFinalPrice() const;
+    QString getPublisherUsername() const;
 
     void setId(const int id);
     void setTitle(const QString& newTitle);
@@ -75,6 +77,8 @@ public:
     void setisActive(bool newisActive);
     void setPublishDate(const QDateTime &date);
     void setSalesCount(int count);
+    void setAverageRating(double ave);
+    void setPublisherUsername(const QString& username);
 
     void addReview(const Review& review);
 };

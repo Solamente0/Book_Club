@@ -33,13 +33,13 @@ int Book::getSalesCount() const{return salesCount;}
 QString Book::getImagePath() const{return imagePath;}
 QString Book::getPdfPath() const{return pdfPath;}
 QDateTime Book::getPublishDate() const{return publishDate;}
-double Book::getFinalPrice() const
-{
+QString Book::getPublisherUsername() const{return publisherUsername;}
+double Book::getAverageRating() const{return averageRating;}
+double Book::getFinalPrice() const{
     return Price * (1.0 - Discount / 100.0);
 }
 
-void Book::addReview(const Review& review)
-{
+void Book::addReview(const Review& review){
     Reviews.append(review);
 }
 
@@ -54,17 +54,6 @@ void Book::setImagePath(const QString& newpath) {imagePath = newpath;}
 void Book::setPdfPath(const QString& newpath) {pdfPath = newpath;}
 void Book::setPublishDate(const QDateTime& date) {publishDate = date;}
 void Book::setisActive(bool newisActive) {isActive = newisActive;}
+void Book::setAverageRating(double ave) {averageRating = ave;}
 void Book::setSalesCount(int count) {salesCount = count;}
-
-double Book::getAverageRating() const
-{
-    if (Reviews.isEmpty())
-        return 0.0;
-
-    double sum = 0.0;
-
-    for (const Review& review : Reviews)
-        sum += review.getStars();
-
-    return sum / Reviews.size();
-}
+void Book::setPublisherUsername(const QString& username) {publisherUsername = username;}
