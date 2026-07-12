@@ -23,7 +23,15 @@ bool Database::connect(const QString &dbPath) {
     pragmaQuery.exec("PRAGMA foreign_keys = ON;");
 
     qDebug() << "Database connected successfully.";
-    return createTables();
+    return createMembersTable()
+        && createBooksTable()
+        && createPurchasesTable()
+        && createCartsTable()
+        && createReviewsTable()
+        && createSavedBooksTable()
+        && createShelvesTable()
+        && createShelfBooksTable()
+        && createNotificationsTable();
 }
 
 bool Database::isConnected() const{
@@ -39,18 +47,6 @@ QSqlQuery Database::createQuery() const{
     return QSqlQuery(db);
 }
 
-bool Database::createTables()
-{
-    return createMembersTable()
-        && createBooksTable()
-        && createPurchasesTable()
-        && createCartsTable()
-        && createReviewsTable()
-        && createSavedBooksTable()
-        && createShelvesTable()
-        && createShelfBooksTable()
-        && createNotificationsTable();
-}
 
 bool Database::createMembersTable() {
     QSqlQuery query(db);
@@ -63,7 +59,6 @@ bool Database::createMembersTable() {
         "security_answer        TEXT,"
         "is_blocked             INTEGER DEFAULT 0,"
         "is_first_login         INTEGER DEFAULT 1,"
-        "purchases_count        INTEGER DEFAULT 0,"
         "favorite_genres        TEXT DEFAULT '[]',"
         "total_revenue          REAL DEFAULT 0.0,"
         "register_date          TEXT"

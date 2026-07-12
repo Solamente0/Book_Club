@@ -9,21 +9,12 @@
 
 class Database
 {
-public:
-    static Database& instance();
-
-    bool connect(const QString& dbPath = "data/bookclub.db");
-    bool isConnected() const;
-    void close();
-
-    QSqlQuery createQuery() const;
-
 private:
+    QSqlDatabase db;
     Database() = default;
     Database(const Database& ) = delete;
     Database& operator=(const Database& ) = delete;
 
-    bool createTables();
     bool createMembersTable();
     bool createBooksTable();
     bool createPurchasesTable();
@@ -34,7 +25,15 @@ private:
     bool createShelfBooksTable();
     bool createNotificationsTable();
 
-    QSqlDatabase db;
+public:
+    static Database& instance();
+
+    bool connect(const QString& dbPath = "data/bookclub.db");
+    bool isConnected() const;
+    void close();
+
+    QSqlQuery createQuery() const;
+
 };
 
 #endif
