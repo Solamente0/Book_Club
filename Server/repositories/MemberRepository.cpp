@@ -27,7 +27,13 @@ shared_ptr<Member> MemberRepository::mapToMember(QSqlQuery &query)
 
         user->setFirstLogin(query.value("is_first_login").toInt() == 1);
 
-        user->setPurchaseCount(query.value("purchase_count").toInt());
+        QSqlQuery countQuery = Database::instance().createQuery();
+        countQuery.prepare("SELECT COUNT(*) FROM purchases WHERE user_id = :uid");
+        countQuery.bindValue(":uid", id);
+        countQuery.exec();
+    
+        if (countQuery.next())
+            user->setPurchaseCount(countQuery.value(0).toInt());
 
         member = user;
 
@@ -53,8 +59,7 @@ shared_ptr<Member> MemberRepository::mapToMember(QSqlQuery &query)
     return member;
 }
 
-MemberRepository& MemberRepository::instance()
-{
+MemberRepository& MemberRepository::instance() {
     static MemberRepository instance;
     return instance;
 }
@@ -65,11 +70,11 @@ bool MemberRepository::save(Member &member)
     query.prepare(
         "INSERT INTO members "
         "(username, password, role, security_answer,"
-        " is_blocked, is_first_login, purchases_count, "
+        " is_blocked, is_first_login,  "
         "favorite_genres, total_revenue, register_date) "
         "VALUES "
         "(:username, :password, :role, :security_answer, "
-        ", :is_blocked, :is_first_login, :purchases_count,"
+        ", :is_blocked, :is_first_login, "
         ":favorite_genres, :total_revenue, :register_date)"
     );
 
@@ -89,7 +94,6 @@ bool MemberRepository::save(Member &member)
 
             query.bindValue(":favorite_genres", QJsonDocument(genresArray).toJson(QJsonDocument::Compact));
             query.bindValue(":is_first_login", user->isFirstLogin() ? 1 : 0);
-            query.bindValue(":purchase_count", user ? user->getPurchasecount() : 0);
         }
     } 
     else {
@@ -258,20 +262,6 @@ bool MemberRepository::updateTotalRevenue(int publisherId, double revenue)
 
     if (!query.exec()) {
         qWarning() << "UserRepository::updateTotalRevenue error:"<< query.lastError().text();
-        return false;
-    }
-    return true;
-}
-
-bool MemberRepository::updatePurchasesCount(int userId, int count) {
-    QSqlQuery query = Database::instance().createQuery();
-
-    query.prepare("UPDATE members SET purchase_count = :count WHERE id = :id");
-    query.bindValue(":count", count);
-    query.bindValue(":id", userId);
-
-        if (!query.exec()) {
-        qWarning() << "UserRepository::updatePurchaseCount error:"<< query.lastError().text();
         return false;
     }
     return true;

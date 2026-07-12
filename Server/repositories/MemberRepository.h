@@ -35,7 +35,6 @@ public:
     bool updatePassword(int userId, const QString &newPassword);
     bool updateBlockStatus(int userId, bool blocked);
     bool updateFavoriteGenres(int userId, const QVector<genre> &genres);
-    bool updatePurchasesCount(int userId, int count);
     bool updateFirstLogin(int userId, bool isFirst);
     bool updateTotalRevenue(int publisherId, double revenue);
 
