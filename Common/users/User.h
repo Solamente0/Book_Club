@@ -48,6 +48,10 @@ public:
     int lastReadPage(int bookId) const;
     void setLastReadPage(int bookId, int page);
 
+    int getPurchasecount() const;
+    void setPurchaseCount(int count);
+
+
     bool isFirstLogin() const;
     void setFirstLogin(bool first);
 

@@ -21,7 +21,6 @@ QVector<Purchase> User::getpurchasedBooks() const {return purchasedBooks;}
 void User::addPurchasedBook(const Purchase &book) {
     if (!hasPurchasedBook(book.getBook().getId())) {
         purchasedBooks.append(book);
-        purchasesCount++;
     }
 }
 
@@ -99,6 +98,9 @@ void User::setLastReadPage(int bookId, int page) {
             break;
         }
 }
+
+int User::getPurchasecount() const{return purchasesCount;}
+void User::setPurchaseCount(int count) {purchasesCount = count;}
 
 bool User::isFirstLogin() const { return firstLogin; }
 void User::setFirstLogin(bool first) { firstLogin = first;}
