@@ -1,5 +1,6 @@
 #include "SavedBookRepository.h"
 #include "BookRepository.h"
+#include "PurchaseRepository.h"
 
 SavedBookRepository& SavedBookRepository::instance() {
     static SavedBookRepository instance;
@@ -9,6 +10,9 @@ SavedBookRepository& SavedBookRepository::instance() {
 bool SavedBookRepository::save(int userId, int bookId)
 {
     if (hasBook(userId, bookId))
+        return false;
+
+    if (PurchaseRepository::instance().hasPurchased(userId, bookId))
         return false;
 
     QSqlQuery query = Database::instance().createQuery();
