@@ -15,9 +15,9 @@ public:
 
     bool AddItem(const Book& newbook);
     bool RemoveItem(int bookId);
+    bool isEmpty();
 
     const QVector<Book>& getItems() const;
-    double showEachBookPrice();
     int getNumberofitems();
 
     double getTotalPrice();            
@@ -27,4 +27,4 @@ public:
 
     bool CheckOut();
 };
-#endif // CART_H
+#endif

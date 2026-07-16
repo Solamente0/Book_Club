@@ -14,7 +14,7 @@ bool Cart::isBookInCart(int bookId) {
 
 bool Cart::AddItem(const Book& newbook) {
     if (isBookInCart(newbook.getId())) {
-        return false; // کتاب از قبل توی سبد هست
+        return false;
     }
     Items.append(newbook);
     return true;
@@ -27,21 +27,18 @@ bool Cart::RemoveItem(int bookId) {
             return true;
         }
     }
-    return false; // کتاب توی سبد پیدا نشد
+    return false;
+}
+
+bool Cart::isEmpty() {
+    if (Items.isEmpty())
+        return true;
+    return false;
 }
 
 const QVector<Book>& Cart::getItems() const {
     return Items;
 }
-
-double Cart::showEachBookPrice() {
-    if (Items.isEmpty()) {
-        return 0.0;
-    }
-    for (const Book& book : Items) {
-        return book.getFinalPrice();
-    }
-};
 
 int Cart::getNumberofitems() {
     return Items.size();
@@ -53,7 +50,7 @@ double Cart::getTotalPrice() {
         sum = sum + eachbook.getPrice();
     }
     return sum;
-};   // جمع قیمت اصلی بدون تخفیف
+};
 
 double Cart::getTotalDiscount() {
     double sum = 0.0;
@@ -61,11 +58,11 @@ double Cart::getTotalDiscount() {
         sum = sum + (eachbook.getPrice() - eachbook.getFinalPrice());
     }
     return sum;
-};   // جمع مقدار تخفیف
+};  
 
 double Cart::getFinalPrice() {
     return getTotalPrice() - getTotalDiscount();
-};   // قیمت نهایی قابل پرداخت
+};
 
 double Cart::getTotaldiscountPercentage() {
     if (getTotalPrice() == 0.0) {
@@ -76,7 +73,7 @@ double Cart::getTotaldiscountPercentage() {
 
 bool Cart::CheckOut() {
     if (Items.isEmpty()) {
-        return false; // سبد خالیه
+        return false;
     }
     Items.clear();
     return true;
