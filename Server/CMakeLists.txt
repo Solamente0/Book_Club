@@ -16,6 +16,16 @@ add_executable(BookClubServer
     repositories/ShelfRepository.cpp
     repositories/NotificationRepository.h
     repositories/NotificationRepository.cpp
+    managers/AuthManager.h
+    managers/AuthManager.cpp
+    managers/BookManager.h
+    managers/BookManager.cpp
+    managers/NotificationManager.h
+    managers/NotificationManager.cpp
+    managers/UserManager.h
+    managers/userManager.cpp
+    managers/PurchaseManager.h
+    managers/PurchaseManager.cpp
 )
 
 target_link_libraries(BookClubServer PRIVATE
