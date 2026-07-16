@@ -102,6 +102,11 @@ bool AuthManager::resetPassword(const QString &username, const QString &newPassw
     if (!member)
         return false;
 
-    return MemberRepository::instance().updatePassword(member->getId(),
-                            hashPassword(newPassword, MemberRepository::instance().getSalt(username)));
+    QString newSalt = generateSalt();
+
+    return MemberRepository::instance().updatePassword(
+        member->getId(),
+        hashPassword(newPassword, newSalt),
+        newSalt
+    );
 }

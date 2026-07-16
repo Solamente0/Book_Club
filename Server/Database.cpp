@@ -55,6 +55,7 @@ bool Database::createMembersTable() {
         "id                     INTEGER PRIMARY KEY AUTOINCREMENT,"
         "username               TEXT UNIQUE NOT NULL,"
         "password               TEXT NOT NULL,"
+        "salt                   TEXT,"
         "role                   TEXT NOT NULL,"
         "security_answer        TEXT,"
         "is_blocked             INTEGER DEFAULT 0,"
