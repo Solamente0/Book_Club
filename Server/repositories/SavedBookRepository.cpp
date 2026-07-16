@@ -77,3 +77,19 @@ QVector<Book> SavedBookRepository::findByUser(int userId)
 
     return books;
 }
+
+QVector<int> SavedBookRepository::findUsersByBook(int bookId)
+{
+    QVector<int> userIds;
+    QSqlQuery query = Database::instance().createQuery();
+    query.prepare("SELECT user_id FROM saved_books WHERE book_id = :bid");
+    query.bindValue(":bid", bookId);
+
+    if (!query.exec())
+        return userIds;
+
+    while (query.next())
+        userIds.append(query.value("user_id").toInt());
+
+    return userIds;
+}

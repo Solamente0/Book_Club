@@ -18,6 +18,7 @@ public:
     bool remove(int userId, int bookId);
     bool hasBook(int userId, int bookId);
     QVector<Book> findByUser(int userId);
+    QVector<int> findUsersByBook(int bookId);
 
 
 };
