@@ -3,11 +3,13 @@
 #include <QJsonArray>
 #include <QDateTime>
 
+#include "../managers/AuthManager.h"
+
 shared_ptr<Member> MemberRepository::mapToMember(QSqlQuery &query)
 {
     QString role = query.value("role").toString();
     int id = query.value("id").toInt();
-    QString username = query.value("username").toString();
+    QString username = AuthManager::instance().decrypt(query.value("username").toString());
     QString password = query.value("password").toString();
     QString secAnswer= query.value("security_answer").toString();
 
@@ -64,22 +66,23 @@ MemberRepository& MemberRepository::instance() {
     return instance;
 }
 
-bool MemberRepository::save(Member &member)
+bool MemberRepository::save(Member &member, const QString& salt)
 {
     QSqlQuery query = Database::instance().createQuery();
     query.prepare(
         "INSERT INTO members "
-        "(username, password, role, security_answer,"
-        " is_blocked, is_first_login,  "
+        "(username, password, salt, role,"
+        "security_answer, is_blocked, is_first_login,  "
         "favorite_genres, total_revenue, register_date) "
         "VALUES "
-        "(:username, :password, :role, :security_answer, "
-        ", :is_blocked, :is_first_login, "
+        "(:username, :password, :salt,   :role, "
+        ":security_answer, :is_blocked, :is_first_login, "
         ":favorite_genres, :total_revenue, :register_date)"
     );
 
     query.bindValue(":username", member.getUsername());
     query.bindValue(":password", member.getPassword());
+    query.bindValue(":salt", salt);
     query.bindValue(":role", member.role());
     query.bindValue(":security_answer", member.getSecurityAnswer());
     query.bindValue(":is_blocked", member.isBlocked() ? 1 : 0);
@@ -132,7 +135,7 @@ shared_ptr<Member> MemberRepository::findById(int id) {
 shared_ptr<Member> MemberRepository::findByUsername(const QString &username) {
     QSqlQuery query = Database::instance().createQuery();
     query.prepare("SELECT * FROM members WHERE username = :username");
-    query.bindValue(":username", username);
+    query.bindValue(":username", AuthManager::instance().encrypt(username));
 
     if (!query.exec() || !query.next())
         return nullptr;
@@ -181,11 +184,57 @@ QVector<shared_ptr<Member>> MemberRepository::findAllPublishers() {
     return publishers;
 }
 
+QVector<shared_ptr<Member>> MemberRepository::searchByUsername(const QString &keyword)
+{
+    QVector<shared_ptr<Member>> members;
+    QSqlQuery query = Database::instance().createQuery();
+    query.prepare("SELECT * FROM members WHERE username LIKE :keyword");
+    query.bindValue(":keyword", AuthManager::instance().encrypt(keyword));
+
+    if (!query.exec())
+        return members;
+
+    while (query.next())
+        members.append(mapToMember(query));
+
+    return members;
+}
+
+QVector<shared_ptr<Member>> MemberRepository::findBlockedUsers()
+{
+    QVector<shared_ptr<Member>> members;
+    QSqlQuery query = Database::instance().createQuery();
+    query.prepare("SELECT * FROM members WHERE is_blocked = 1");
+
+    if (!query.exec())
+        return members;
+
+    while (query.next())
+        members.append(mapToMember(query));
+
+    return members;
+}
+
+QVector<shared_ptr<Member>> MemberRepository::findActiveUsers()
+{
+    QVector<shared_ptr<Member>> members;
+    QSqlQuery query = Database::instance().createQuery();
+    query.prepare("SELECT * FROM members WHERE is_blocked = 0");
+
+    if (!query.exec())
+        return members;
+
+    while (query.next())
+        members.append(mapToMember(query));
+
+    return members;
+}
+
 bool MemberRepository::updateUsername(int userId, const QString &newUsername) {
     QSqlQuery query = Database::instance().createQuery();
     query.prepare("UPDATE members SET username = :username WHERE id = :id");
 
-    query.bindValue(":username", newUsername);
+    query.bindValue(":username", AuthManager::instance().encrypt(newUsername));
     query.bindValue(":id", userId);
 
     if (!query.exec()) {
@@ -195,11 +244,16 @@ bool MemberRepository::updateUsername(int userId, const QString &newUsername) {
     return true;
 }
 
-bool MemberRepository::updatePassword(int userId,const QString &newPassword)
+bool MemberRepository::updatePassword(int userId, const QString &newPassword, const QString &newsalt)
 {
     QSqlQuery query = Database::instance().createQuery();
-    query.prepare("UPDATE members SET password = :password WHERE id = :id");
+    query.prepare("UPDATE members SET"
+                  "password = :password,"
+                  "salt = :salt"
+                  "WHERE id = :id"
+                );
     query.bindValue(":password", newPassword);
+    query.bindValue(":salt", newsalt);
     query.bindValue(":id", userId);
 
     if (!query.exec()) {
@@ -283,7 +337,7 @@ bool MemberRepository::remove(int id)
 bool MemberRepository::usernameExists(const QString &username) {
     QSqlQuery query = Database::instance().createQuery();
     query.prepare("SELECT id FROM members WHERE username = :username");
-    query.bindValue(":username", username);
+    query.bindValue(":username", AuthManager::instance().encrypt(username));
     query.exec();
     return query.next();
 }
@@ -291,10 +345,32 @@ bool MemberRepository::usernameExists(const QString &username) {
 bool MemberRepository::isBlocked(const QString &username) {
     QSqlQuery query = Database::instance().createQuery();
     query.prepare("SELECT is_blocked FROM members WHERE username = :username");
-    query.bindValue(":username", username);
+    query.bindValue(":username", AuthManager::instance().encrypt(username));
     query.exec();
 
     if (query.next())
         return query.value("is_blocked").toInt() == 1;
     return false;
+}
+
+bool MemberRepository::isFirstLogin(int userId) {
+    QSqlQuery query = Database::instance().createQuery();
+    query.prepare("SELECT is_first_login FROM members WHERE id = :id");
+    query.bindValue(":id", userId);
+    query.exec();
+
+    if (query.next())
+        return query.value("is_first_login").toInt() == 1;
+    return false;
+}
+
+QString MemberRepository::getSalt(const QString &username) {
+    QSqlQuery query = Database::instance().createQuery();
+    query.prepare("SELECT salt FROM members WHERE username = :username");
+    query.bindValue(":username", AuthManager::instance().encrypt(username));
+    query.exec();
+
+    if (query.next())
+        return query.value("salt").toString();
+    return QString();
 }

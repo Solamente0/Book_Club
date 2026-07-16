@@ -23,16 +23,19 @@ private:
 public:
     static MemberRepository& instance();
 
-    bool save(Member &member);
+    bool save(Member &member, const QString &salt);
 
     shared_ptr<Member> findById(int id);
     shared_ptr<Member> findByUsername(const QString &username);
     QVector<shared_ptr<Member>> findAll();
     QVector<shared_ptr<Member>> findAllUsers();
     QVector<shared_ptr<Member>> findAllPublishers();
+    QVector<shared_ptr<Member>> findBlockedUsers();
+    QVector<shared_ptr<Member>> findActiveUsers();
+    QVector<shared_ptr<Member>> searchByUsername(const QString &keyword);
 
     bool updateUsername(int userId, const QString &newUsername);
-    bool updatePassword(int userId, const QString &newPassword);
+    bool updatePassword(int userId, const QString &newPassword, const QString &newsalt);
     bool updateBlockStatus(int userId, bool blocked);
     bool updateFavoriteGenres(int userId, const QVector<genre> &genres);
     bool updateFirstLogin(int userId, bool isFirst);
@@ -41,6 +44,9 @@ public:
     bool remove(int id);
     bool usernameExists(const QString &username);
     bool isBlocked(const QString &username);
+    bool isFirstLogin(int userId);
+
+    QString getSalt(const QString &username);
 
 };
 
