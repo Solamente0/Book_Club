@@ -1,6 +1,8 @@
 #include "BookRepository.h"
 #include <QDateTime>
 
+#include "../managers/AuthManager.h"
+
 Book BookRepository::mapToBook(QSqlQuery &query)
 {
     Book book;
@@ -33,6 +35,8 @@ Review BookRepository::mapToReview(QSqlQuery &query)
         query.value("stars").toInt(),
         query.value("comment").toString()
     );
+
+    review.setUsername(AuthManager::instance().decrypt(query.value("username").toString()));
 
     QString lastEdited = query.value("last_edited").toString();
     if (!lastEdited.isEmpty())
@@ -393,7 +397,11 @@ bool BookRepository::removeReview(int bookId, int userId)
 QVector<Review> BookRepository::findReviews(int bookId) {
     QVector<Review> reviews;
     QSqlQuery query = Database::instance().createQuery();
-    query.prepare("SELECT * FROM reviews WHERE book_id = :book_id");
+    query.prepare(
+        "SELECT r.*, u.username FROM reviews r "
+        "JOIN members u ON r.user_id = u.id "
+        "WHERE r.book_id = :book_id"
+    );
     query.bindValue(":book_id", bookId);
 
     if (!query.exec())
