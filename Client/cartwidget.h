@@ -8,6 +8,7 @@
 #include <QLabel>
 #include <QPushButton>
 #include "Cart.h"
+#include "Book.h"
 
 class CartWidget : public QWidget {
     Q_OBJECT

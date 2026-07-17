@@ -3,6 +3,7 @@
 #include <QPainter>
 #include <QScrollArea>
 #include <QScrollBar>
+//adding this to fix problem of commiting
 
 CartWidget::CartWidget(Cart *cart, QWidget *parent)
     : QWidget(parent), m_cart(cart)
