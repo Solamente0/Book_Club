@@ -38,6 +38,10 @@ double Book::getAverageRating() const{return averageRating;}
 double Book::getFinalPrice() const{
     return Price * (1.0 - Discount / 100.0);
 }
+const QVector<Review>& Book::getReviews() const
+{
+    return Reviews;
+}
 
 void Book::addReview(const Review& review){
     Reviews.append(review);

@@ -43,4 +43,12 @@ int Member::unreadNotificationsCount() const{
             count++;
     return count;
 }
+QString Member::getEmail() const
+{
+    return email;
+}
 
+void Member::setEmail(const QString &newEmail)
+{
+    email = newEmail;
+}

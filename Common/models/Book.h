@@ -64,6 +64,7 @@ public:
     double getAverageRating() const;
     double getFinalPrice() const;
     QString getPublisherUsername() const;
+    const QVector<Review>& getReviews() const;
 
     void setId(const int id);
     void setTitle(const QString& newTitle);
