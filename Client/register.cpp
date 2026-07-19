@@ -2,8 +2,11 @@
 #include <QStyleOption>
 #include <QPainter>
 #include <QMessageBox>
+#include "User.h"
 
-Register::Register(QWidget *parent) : QWidget(parent) {
+Register::Register(UserManager *manager, QWidget *parent)
+    : QWidget(parent), userManager(manager)
+{
     // ۱. تنظیم نام آبجکت برای اعمال پس‌زمینه کرمی یکدست روی کل صفحه
     this->setObjectName("signUpPage");
     this->setStyleSheet(
@@ -27,10 +30,9 @@ Register::Register(QWidget *parent) : QWidget(parent) {
     signupframe->setMinimumSize(360, 560);
     signupframe->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    // استایل شیشه‌ای آبی آسمانی با کادرهای صورتی کمرنگ
     signupframe->setStyleSheet(
         "QFrame#signUpFrame {"
-        "   background-color: rgba(210, 235, 255, 170);" /* آبی آسمانی شفاف‌تر برای حس شیشه */
+        "   background-color: rgba(210, 235, 255, 170);"
         "   border-radius: 25px;"
         "}"
         "QLabel {"
@@ -38,7 +40,6 @@ Register::Register(QWidget *parent) : QWidget(parent) {
         "   background: transparent;"
         "   border: none;"
         "}"
-        /* استایل چک‌باکس با مربع مشکی */
         "QCheckBox {"
         "   color: #2C3E50;"
         "   background: transparent;"
@@ -54,10 +55,9 @@ Register::Register(QWidget *parent) : QWidget(parent) {
         "QCheckBox::indicator:checked {"
         "   background-color: #000000;"
         "}"
-        /* فیلدهای ورودی با بک‌گراند نیمه‌شفاف و کادر صورتی کمرنگ */
         "QLineEdit {"
-        "   background-color: rgba(255, 255, 255, 210);" /* کمی شفاف تا شیشه زیرش حس شود */
-        "   border: 1.5px solid #FFC0CB;" /* کادر صورتی کمرنگ */
+        "   background-color: rgba(255, 255, 255, 210);"
+        "   border: 1.5px solid #FFC0CB;"
         "   border-radius: 8px;"
         "   padding: 8px;"
         "   color: #2C3E50;"
@@ -65,7 +65,6 @@ Register::Register(QWidget *parent) : QWidget(parent) {
         "QLineEdit:focus {"
         "   border: 2px solid #FFB6C1;"
         "}"
-        /* دکمه Sign Up با کادر صورتی */
         "QPushButton#signUpBtn {"
         "   background-color: rgba(255,255,255,220);"
         "   color: #2C3E50;"
@@ -138,6 +137,17 @@ Register::Register(QWidget *parent) : QWidget(parent) {
     leconfirmpassword->setMinimumHeight(38);
     frameLayout->addWidget(leconfirmpassword);
 
+    // ۹-۱. فیلد سؤال امنیتی (برای فراموشی رمز عبور در آینده)
+    lblsecurityquestion = new QLabel("What is your favorite book or author?", signupframe);
+    lblsecurityquestion->setFont(QFont("Segoe UI", 9, QFont::DemiBold));
+    lblsecurityquestion->setWordWrap(true);
+    frameLayout->addWidget(lblsecurityquestion);
+
+    lesecurityanswer = new QLineEdit(signupframe);
+    lesecurityanswer->setPlaceholderText("Your answer");
+    lesecurityanswer->setMinimumHeight(38);
+    frameLayout->addWidget(lesecurityanswer);
+
     // ۱۰. چک‌باکس قوانین
     chkterms = new QCheckBox("I agree to the Terms", signupframe);
     frameLayout->addWidget(chkterms);
@@ -180,8 +190,7 @@ Register::Register(QWidget *parent) : QWidget(parent) {
 
     this->setLayout(mainLayout);
 
-
-    connect(btnsignup,&QPushButton::clicked,this,&Register::onSignUpClicked);
+    connect(btnsignup, &QPushButton::clicked, this, &Register::onSignUpClicked);
 }
 
 void Register::onSignUpClicked() {
@@ -215,13 +224,31 @@ void Register::onSignUpClicked() {
         return;
     }
 
-    // ۶. بررسی تایید قوانین و شروط
+    // ۶. بررسی خالی بودن پاسخ سؤال امنیتی
+    if (lesecurityanswer->text().isEmpty()) {
+        QMessageBox::warning(this, "Validation Error", "Please answer the security question.");
+        return;
+    }
+
+    // ۷. بررسی تایید قوانین و شروط
     if (!chkterms->isChecked()) {
         QMessageBox::warning(this, "Validation Error", "You must agree to the Terms and Conditions to register.");
         return;
     }
 
-    // ۷. اگر همه مراحل درست بود: نمایش پیام موفقیت و شلیک سیگنال
+    // ۸. ساخت کاربر جدید و ثبتش در UserManager
+    User newUser(leusername->text().trimmed(), lepassword->text(), lesecurityanswer->text().trimmed());
+    newUser.setEmail(leemail->text().trimmed());
+    newUser.setFirstLogin(true);
+
+    bool success = userManager->registerUser(newUser);
+
+    if (!success) {
+        QMessageBox::warning(this, "Validation Error", "This username is already taken. Please choose another one.");
+        return;
+    }
+
+    // ۹. نمایش پیام موفقیت و شلیک سیگنال
     QMessageBox::information(this, "Success", "Your account has been created successfully!");
 
     emit SignUpSuccess();

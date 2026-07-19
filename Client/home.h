@@ -1,6 +1,5 @@
 #ifndef HOME_H
 #define HOME_H
-
 #include <QWidget>
 #include <QLabel>
 #include <QLineEdit>
@@ -9,27 +8,30 @@
 #include <QFrame>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include "Book.h"
 
 class home : public QWidget
 {
     Q_OBJECT
-
 public:
     explicit home(QWidget *parent = nullptr);
     ~home();
 
+    void loadGenreBooks(const QVector<Book> &books);
+    void loadFeaturedBooks(const QVector<Book> &books);
+    void loadRecommendedBooks(const QVector<Book> &books);
+    void loadNewReleases(const QVector<Book> &books);
+    void loadBestSellers(const QVector<Book> &books);
+    void loadFreeBooks(const QVector<Book> &books);
+
 protected:
     void paintEvent(QPaintEvent *event) override;
-
 signals:
     void cartRequested();
-
+    void bookClicked(const Book &book);
 private:
-    QWidget *createBookWidget(const QString &imagePath,
-                              const QString &title,
-                              QWidget *parent);
+    QWidget *createBookWidget(const Book &book, QWidget *parent);
 
-    // نوار هدر بالا
     QWidget *headerWidget;
     QLabel *lblLogo;
     QLineEdit *leSearch;
@@ -37,19 +39,21 @@ private:
     QPushButton *btnCart;
     QPushButton *btnProfile;
 
-    // منطقه اسکرول‌شونده
     QScrollArea *scrollArea;
     QWidget *scrollWidget;
 
-    // بخش‌های اصلی صفحه
     QFrame *genresFrame;
     QFrame *featuredFrame;
     QFrame *recommendedFrame;
     QFrame *newReleasesFrame;
+    QFrame *bestSellersFrame;
+    QFrame *freeBooksFrame;
 
-
-    QFrame *bestSellersFrame;  // این متغیر را اضافه کن
-    QFrame *freeBooksFrame;     // این متغیر را اضافه کن
+    QHBoxLayout *genresItemsLayout;
+    QHBoxLayout *featuredItemsLayout;
+    QHBoxLayout *recommendedItemsLayout;
+    QHBoxLayout *newReleasesItemsLayout;
+    QHBoxLayout *bestSellersItemsLayout;
+    QHBoxLayout *freeBooksItemsLayout;
 };
-
 #endif // HOME_H

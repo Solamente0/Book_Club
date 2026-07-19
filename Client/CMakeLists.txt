@@ -26,8 +26,7 @@ qt_add_executable(Client
     mainwindow.cpp
     register.h
     register.cpp
-    bookcard.h
-    bookcard.cpp
+
     ../Common/models/Book.h
     ../Common/models/Book.cpp
 
@@ -41,6 +40,26 @@ qt_add_executable(Client
 
     cartwidget.h
     cartwidget.cpp
+    
+    ../Common/users/User.h
+    ../Common/users/User.cpp
+      ../Common/users/Member.h
+    ../Common/users/Member.cpp
+    usermanager.h
+    usermanager.cpp
+
+
+
+      ../Common/models/Shelf.h
+    ../Common/models/Shelf.cpp
+    ../Common/models/Notification.h
+    ../Common/models/Notification.cpp
+    genreselectionwidget.h
+    genreselectionwidget.cpp
+    forgotpasswordwidget.h
+    forgotpasswordwidget.cpp
+
+
 
 )
 target_link_libraries(Client
@@ -50,6 +69,7 @@ target_link_libraries(Client
 )
 target_include_directories(Client PRIVATE
     ../Common/models
+    ../Common/users
 )
 
 install(TARGETS Client

@@ -7,40 +7,41 @@
 #include <QScrollArea>
 #include <QLabel>
 #include <QPushButton>
+#include <QFrame>
 #include "Cart.h"
 #include "Book.h"
 
-class CartWidget : public QWidget {
+class CartWidget : public QWidget
+{
     Q_OBJECT
-private:
-    Cart *m_cart; // پوینتر به کلاس منطق سبد خرید شما
+public:
+    explicit CartWidget(Cart *cart, QWidget *parent = nullptr);
 
-    // اجزای رابط کاربری
+public slots:
+    void updateUI();
+
+signals:
+    void backToHomeRequested();
+    void checkoutSuccessful();
+
+protected:
+    void paintEvent(QPaintEvent *event) override;
+
+private:
+    void setupUI();
+    QWidget* createCartItemRow(const Book &book);
+
+    Cart *m_cart;
+
+    QScrollArea *scrollArea;
     QWidget *scrollWidget;
     QVBoxLayout *itemsLayout;
-    QScrollArea *scrollArea;
 
     QLabel *lblTotalItemsVal;
     QLabel *lblTotalPriceVal;
     QLabel *lblDiscountVal;
     QLabel *lblFinalPriceVal;
     QPushButton *btnCheckout;
-
-    void setupUI();
-    QWidget* createCartItemRow(const Book &book);
-
-public:
-    explicit CartWidget(Cart *cart, QWidget *parent = nullptr);
-    ~CartWidget() = default;
-
-    void updateUI(); // متد به‌روزرسانی پویا لیست کتاب‌ها و محاسبات فاکتور
-
-signals:
-    void checkoutSuccessful(); // سیگنال اتمام موفق خرید (برای انتقال کتاب‌ها به کتابخانه شخصی)
-    void backToHomeRequested(); // سیگنال بازگشت به هوم‌پیج
-
-protected:
-    void paintEvent(QPaintEvent *event) override;
 };
 
 #endif // CARTWIDGET_H

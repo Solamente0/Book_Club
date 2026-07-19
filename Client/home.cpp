@@ -4,7 +4,6 @@
 #include <QPixmap>
 
 home::home(QWidget *parent) : QWidget(parent) {
-    // ۱. اعمال گرادینت مورب و ملایم صفحه رجیستر روی هوم‌پیج
     this->setObjectName("homePage");
     this->setStyleSheet(
         "QWidget#homePage {"
@@ -16,9 +15,7 @@ home::home(QWidget *parent) : QWidget(parent) {
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
 
-    // ==========================================
-    // ۲. نوار هدر بالا (شفاف روی گرادینت)
-    // ==========================================
+    // نوار هدر بالا
     headerWidget = new QWidget(this);
     headerWidget->setMinimumHeight(75);
     headerWidget->setMaximumHeight(75);
@@ -28,7 +25,6 @@ home::home(QWidget *parent) : QWidget(parent) {
     headerLayout->setContentsMargins(25, 0, 25, 0);
     headerLayout->setSpacing(15);
 
-    // لوگو با رنگ صورتی ملایم جدید شما
     lblLogo = new QLabel(headerWidget);
     lblLogo->setText("<span style='color:#f68787;'>B👓k Club</span>");
     lblLogo->setFont(QFont("Segoe UI", 22, QFont::Bold));
@@ -36,7 +32,6 @@ home::home(QWidget *parent) : QWidget(parent) {
 
     headerLayout->addStretch(1);
 
-    // باکس جستجو با فریم مشکی ظریف و متن صورتی ملایم جدید شما
     leSearch = new QLineEdit(headerWidget);
     leSearch->setPlaceholderText("search...");
     leSearch->setFixedWidth(240);
@@ -55,7 +50,6 @@ home::home(QWidget *parent) : QWidget(parent) {
 
     headerLayout->addStretch(1);
 
-    // آیکون‌های هدر
     btnNotification = new QPushButton("🔔", headerWidget);
     btnNotification->setCursor(Qt::PointingHandCursor);
     btnNotification->setStyleSheet("background: transparent; border: none; font-size: 19px; color: #000000;");
@@ -73,9 +67,7 @@ home::home(QWidget *parent) : QWidget(parent) {
 
     mainLayout->addWidget(headerWidget);
 
-    // ==========================================
-    // ۳. منطقه اسکرول‌شونده برای بخش‌های اصلی
-    // ==========================================
+    // منطقه اسکرول‌شونده
     scrollArea = new QScrollArea(this);
     scrollArea->setWidgetResizable(true);
     scrollArea->setFrameShape(QFrame::NoFrame);
@@ -90,9 +82,7 @@ home::home(QWidget *parent) : QWidget(parent) {
     scrollLayout->setContentsMargins(20, 20, 20, 20);
     scrollLayout->setSpacing(25);
 
-    // ------------------------------------------
     // الف) بخش ژانرها (Genres)
-    // ------------------------------------------
     genresFrame = new QFrame(scrollWidget);
     genresFrame->setStyleSheet("background-color: rgba(253, 246, 238, 180); border-radius: 20px;");
     QVBoxLayout *genresLayout = new QVBoxLayout(genresFrame);
@@ -110,20 +100,13 @@ home::home(QWidget *parent) : QWidget(parent) {
     genresHeader->addWidget(btnGenresSeeAll);
     genresLayout->addLayout(genresHeader);
 
-    QHBoxLayout *genresItemsLayout = new QHBoxLayout();
+    genresItemsLayout = new QHBoxLayout();
     genresItemsLayout->setSpacing(15);
-    genresItemsLayout->addWidget(createBookWidget(":/images/fantasy.jpg", "Fantasy Best", genresFrame));
-    genresItemsLayout->addWidget(createBookWidget(":/images/novel.jpg", "The Novel", genresFrame));
-    genresItemsLayout->addWidget(createBookWidget(":/images/romance.jpg", "Love Story", genresFrame));
-    genresItemsLayout->addWidget(createBookWidget(":/images/history.jpg", "World History", genresFrame));
-    genresItemsLayout->addWidget(createBookWidget(":/images/mystery.jpg", "Mystery Case", genresFrame));
     genresLayout->addLayout(genresItemsLayout);
 
     scrollLayout->addWidget(genresFrame);
 
-    // ------------------------------------------
     // ب) بخش ویژه (Featured Books)
-    // ------------------------------------------
     featuredFrame = new QFrame(scrollWidget);
     featuredFrame->setStyleSheet("background-color: rgba(210, 235, 255, 170); border-radius: 20px;");
     QVBoxLayout *featuredLayout = new QVBoxLayout(featuredFrame);
@@ -141,22 +124,15 @@ home::home(QWidget *parent) : QWidget(parent) {
     featuredHeader->addWidget(btnFeaturedSeeAll);
     featuredLayout->addLayout(featuredHeader);
 
-    QHBoxLayout *featuredItemsLayout = new QHBoxLayout();
+    featuredItemsLayout = new QHBoxLayout();
     featuredItemsLayout->setSpacing(15);
-    featuredItemsLayout->addWidget(createBookWidget(":/images/feat1.jpg", "Book Title 1", featuredFrame));
-    featuredItemsLayout->addWidget(createBookWidget(":/images/feat2.jpg", "Book Title 2", featuredFrame));
-    featuredItemsLayout->addWidget(createBookWidget(":/images/feat3.jpg", "Book Title 3", featuredFrame));
-    featuredItemsLayout->addWidget(createBookWidget(":/images/feat4.jpg", "Book Title 4", featuredFrame));
-    featuredItemsLayout->addWidget(createBookWidget(":/images/feat5.jpg", "Book Title 5", featuredFrame));
     featuredLayout->addLayout(featuredItemsLayout);
 
     scrollLayout->addWidget(featuredFrame);
 
-    // ------------------------------------------
     // ج) بخش پیشنهادی (Recommended for u)
-    // ------------------------------------------
     recommendedFrame = new QFrame(scrollWidget);
-    recommendedFrame->setStyleSheet("background-color: #f4dbde; border-radius: 20px;");
+    recommendedFrame->setStyleSheet("background-color: #FFD1DC; border-radius: 20px;");
     QVBoxLayout *recommendedLayout = new QVBoxLayout(recommendedFrame);
     recommendedLayout->setContentsMargins(20, 18, 20, 18);
 
@@ -172,20 +148,13 @@ home::home(QWidget *parent) : QWidget(parent) {
     recommendedHeader->addWidget(btnRecommendedSeeAll);
     recommendedLayout->addLayout(recommendedHeader);
 
-    QHBoxLayout *recommendedItemsLayout = new QHBoxLayout();
+    recommendedItemsLayout = new QHBoxLayout();
     recommendedItemsLayout->setSpacing(15);
-    recommendedItemsLayout->addWidget(createBookWidget(":/images/rec1.jpg", "Recommended 1", recommendedFrame));
-    recommendedItemsLayout->addWidget(createBookWidget(":/images/rec2.jpg", "Recommended 2", recommendedFrame));
-    recommendedItemsLayout->addWidget(createBookWidget(":/images/rec3.jpg", "Recommended 3", recommendedFrame));
-    recommendedItemsLayout->addWidget(createBookWidget(":/images/rec4.jpg", "Recommended 4", recommendedFrame));
-    recommendedItemsLayout->addWidget(createBookWidget(":/images/rec5.jpg", "Recommended 5", recommendedFrame));
     recommendedLayout->addLayout(recommendedItemsLayout);
 
     scrollLayout->addWidget(recommendedFrame);
 
-    // ------------------------------------------
     // د) بخش جدیدترین‌ها (New Releases)
-    // ------------------------------------------
     newReleasesFrame = new QFrame(scrollWidget);
     newReleasesFrame->setStyleSheet("background-color: rgba(255, 192, 159, 195); border-radius: 20px;");
     QVBoxLayout *newReleasesLayout = new QVBoxLayout(newReleasesFrame);
@@ -203,20 +172,13 @@ home::home(QWidget *parent) : QWidget(parent) {
     newReleasesHeader->addWidget(btnNewReleasesSeeAll);
     newReleasesLayout->addLayout(newReleasesHeader);
 
-    QHBoxLayout *newReleasesItemsLayout = new QHBoxLayout();
+    newReleasesItemsLayout = new QHBoxLayout();
     newReleasesItemsLayout->setSpacing(15);
-    newReleasesItemsLayout->addWidget(createBookWidget(":/images/new1.jpg", "New Release 1", newReleasesFrame));
-    newReleasesItemsLayout->addWidget(createBookWidget(":/images/new2.jpg", "New Release 2", newReleasesFrame));
-    newReleasesItemsLayout->addWidget(createBookWidget(":/images/new3.jpg", "New Release 3", newReleasesFrame));
-    newReleasesItemsLayout->addWidget(createBookWidget(":/images/new4.jpg", "New Release 4", newReleasesFrame));
-    newReleasesItemsLayout->addWidget(createBookWidget(":/images/new5.jpg", "New Release 5", newReleasesFrame));
     newReleasesLayout->addLayout(newReleasesItemsLayout);
 
     scrollLayout->addWidget(newReleasesFrame);
 
-    // ------------------------------------------
-    // هـ) بخش پرفروش‌ها (Best Sellers) - [تکرار استایل و رنگ آبی ملایم شما]
-    // ------------------------------------------
+    // هـ) بخش پرفروش‌ها (Best Sellers)
     bestSellersFrame = new QFrame(scrollWidget);
     bestSellersFrame->setStyleSheet("background-color: rgba(210, 235, 255, 170); border-radius: 20px;");
     QVBoxLayout *bestSellersLayout = new QVBoxLayout(bestSellersFrame);
@@ -234,22 +196,15 @@ home::home(QWidget *parent) : QWidget(parent) {
     bestSellersHeader->addWidget(btnBestSellersSeeAll);
     bestSellersLayout->addLayout(bestSellersHeader);
 
-    QHBoxLayout *bestSellersItemsLayout = new QHBoxLayout();
+    bestSellersItemsLayout = new QHBoxLayout();
     bestSellersItemsLayout->setSpacing(15);
-    bestSellersItemsLayout->addWidget(createBookWidget(":/images/best1.jpg", "Best Seller 1", bestSellersFrame));
-    bestSellersItemsLayout->addWidget(createBookWidget(":/images/best2.jpg", "Best Seller 2", bestSellersFrame));
-    bestSellersItemsLayout->addWidget(createBookWidget(":/images/best3.jpg", "Best Seller 3", bestSellersFrame));
-    bestSellersItemsLayout->addWidget(createBookWidget(":/images/best4.jpg", "Best Seller 4", bestSellersFrame));
-    bestSellersItemsLayout->addWidget(createBookWidget(":/images/best5.jpg", "Best Seller 5", bestSellersFrame));
     bestSellersLayout->addLayout(bestSellersItemsLayout);
 
     scrollLayout->addWidget(bestSellersFrame);
 
-    // ------------------------------------------
-    // و) بخش کتاب‌های رایگان (Free Books) - [تکرار استایل و رنگ صورتی چرک شما]
-    // ------------------------------------------
+    // و) بخش کتاب‌های رایگان (Free Books)
     freeBooksFrame = new QFrame(scrollWidget);
-    freeBooksFrame->setStyleSheet("background-color: #f4dbde; border-radius: 20px;");
+    freeBooksFrame->setStyleSheet("background-color: #FFD1DC; border-radius: 20px;");
     QVBoxLayout *freeBooksLayout = new QVBoxLayout(freeBooksFrame);
     freeBooksLayout->setContentsMargins(20, 18, 20, 18);
 
@@ -265,47 +220,104 @@ home::home(QWidget *parent) : QWidget(parent) {
     freeBooksHeader->addWidget(btnFreeBooksSeeAll);
     freeBooksLayout->addLayout(freeBooksHeader);
 
-    QHBoxLayout *freeBooksItemsLayout = new QHBoxLayout();
+    freeBooksItemsLayout = new QHBoxLayout();
     freeBooksItemsLayout->setSpacing(15);
-    freeBooksItemsLayout->addWidget(createBookWidget(":/images/free1.jpg", "Free Book 1", freeBooksFrame));
-    freeBooksItemsLayout->addWidget(createBookWidget(":/images/free2.jpg", "Free Book 2", freeBooksFrame));
-    freeBooksItemsLayout->addWidget(createBookWidget(":/images/free3.jpg", "Free Book 3", freeBooksFrame));
-    freeBooksItemsLayout->addWidget(createBookWidget(":/images/free4.jpg", "Free Book 4", freeBooksFrame));
-    freeBooksItemsLayout->addWidget(createBookWidget(":/images/free5.jpg", "Free Book 5", freeBooksFrame));
     freeBooksLayout->addLayout(freeBooksItemsLayout);
 
     scrollLayout->addWidget(freeBooksFrame);
 
-    // نهایی‌سازی اسکرول
     scrollArea->setWidget(scrollWidget);
     mainLayout->addWidget(scrollArea);
 
-    // inside home.cpp (در انتهای سازنده کلاس هوم)
     connect(btnCart, &QPushButton::clicked, this, &home::cartRequested);
 }
 
-// متد ساخت فریم کتاب با قابلیت تغییر ابعاد هوشمند و واکنش‌گرا (همان سایز و استایل شما)
-QWidget *home::createBookWidget(const QString &imagePath,
-                                const QString &title,
-                                QWidget *parent)
+QWidget *home::createBookWidget(const Book &book, QWidget *parent)
 {
-    QFrame *card = new QFrame(parent);
+    QPushButton *card = new QPushButton(parent);
+    card->setCursor(Qt::PointingHandCursor);
 
-    // همان ابعاد پویای تعریف شده توسط خودت (بین ۱۱۰ تا ۱۴۰)
     card->setMinimumSize(110, 155);
     card->setMaximumSize(140, 180);
-
-    // فعال کردن سیاست تغییر سایز افقی پویا
     card->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-    // استایل شیشه‌ای ملایم فریم‌های خالی کاملاً مطابق با سلیقه شما
+    card->setText(book.getTitle());
     card->setStyleSheet(
-        "background-color: rgba(255, 255, 255, 110);"
-        "border-radius: 12px;"
-        "border: 1px solid rgba(0, 0, 0, 20);"
+        "QPushButton {"
+        "   background-color: rgba(255, 255, 255, 110);"
+        "   border-radius: 12px;"
+        "   border: 1px solid rgba(0, 0, 0, 20);"
+        "   padding: 5px;"
+        "}"
+        "QPushButton:hover {"
+        "   background-color: rgba(255, 255, 255, 180);"
+        "}"
         );
 
+    connect(card, &QPushButton::clicked, this, [this, book]() {
+        emit bookClicked(book);
+    });
+
     return card;
+}
+
+static void clearLayout(QHBoxLayout *layout)
+{
+    QLayoutItem *child;
+    while ((child = layout->takeAt(0)) != nullptr) {
+        if (child->widget()) {
+            child->widget()->deleteLater();
+        }
+        delete child;
+    }
+}
+
+void home::loadGenreBooks(const QVector<Book> &books)
+{
+    clearLayout(genresItemsLayout);
+    for (const Book &book : books) {
+        genresItemsLayout->addWidget(createBookWidget(book, genresFrame));
+    }
+}
+
+void home::loadFeaturedBooks(const QVector<Book> &books)
+{
+    clearLayout(featuredItemsLayout);
+    for (const Book &book : books) {
+        featuredItemsLayout->addWidget(createBookWidget(book, featuredFrame));
+    }
+}
+
+void home::loadRecommendedBooks(const QVector<Book> &books)
+{
+    clearLayout(recommendedItemsLayout);
+    for (const Book &book : books) {
+        recommendedItemsLayout->addWidget(createBookWidget(book, recommendedFrame));
+    }
+}
+
+void home::loadNewReleases(const QVector<Book> &books)
+{
+    clearLayout(newReleasesItemsLayout);
+    for (const Book &book : books) {
+        newReleasesItemsLayout->addWidget(createBookWidget(book, newReleasesFrame));
+    }
+}
+
+void home::loadBestSellers(const QVector<Book> &books)
+{
+    clearLayout(bestSellersItemsLayout);
+    for (const Book &book : books) {
+        bestSellersItemsLayout->addWidget(createBookWidget(book, bestSellersFrame));
+    }
+}
+
+void home::loadFreeBooks(const QVector<Book> &books)
+{
+    clearLayout(freeBooksItemsLayout);
+    for (const Book &book : books) {
+        freeBooksItemsLayout->addWidget(createBookWidget(book, freeBooksFrame));
+    }
 }
 
 void home::paintEvent(QPaintEvent *event)
