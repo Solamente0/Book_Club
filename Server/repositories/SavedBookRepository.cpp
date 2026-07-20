@@ -32,6 +32,9 @@ bool SavedBookRepository::save(int userId, int bookId)
 
 bool SavedBookRepository::remove(int userId, int bookId)
 {
+    if (!hasBook(userId, bookId))
+        return false;
+        
     QSqlQuery query = Database::instance().createQuery();
     query.prepare(
         "DELETE FROM saved_books "

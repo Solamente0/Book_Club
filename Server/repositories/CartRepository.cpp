@@ -28,6 +28,9 @@ bool CartRepository::addBook(int userId, int bookId)
 
 bool CartRepository::removeBook(int userId, int bookId)
 {
+    if (!hasBook(userId, bookId))
+        return false;
+        
     QSqlQuery query = Database::instance().createQuery();
     query.prepare(
         "DELETE FROM carts "

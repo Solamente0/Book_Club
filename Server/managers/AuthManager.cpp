@@ -72,9 +72,6 @@ bool AuthManager::registerPublisher(const QString &username, const QString &pass
 
 shared_ptr<Member> AuthManager::login(const QString &username, const QString &password)
 {
-    if (MemberRepository::instance().isBlocked(username))
-        return nullptr;
-
     auto member = MemberRepository::instance().findByUsername(username);
 
     if (!member)

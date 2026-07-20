@@ -41,10 +41,10 @@ bool UserManager::updatePassword(int userId, const QString &oldPassword, const Q
     );
 }
 
-bool UserManager::updateFavoriteGenres(int userId, const QVector<genre> &genres) {
-    if (genres.size() > 3)
-        return false;
+bool UserManager::updateFavoriteGenres(int userId, const QVector<genre> &genres) 
+{
     if (MemberRepository::instance().isFirstLogin(userId))
-        MemberRepository::instance().updateFirstLogin(userId, false);
+        if(!MemberRepository::instance().updateFirstLogin(userId, false))
+            return false;
     return MemberRepository::instance().updateFavoriteGenres(userId, genres);
 }
