@@ -24,22 +24,22 @@ public:
     User(const QString& username, const QString& hashedPassword, const QString& securityAnswer);
     QString role() const override;
 
-    QVector<genre> getfavoriteGenres() const;
+    const QVector<genre>& getfavoriteGenres() const;
     void setFavoriteGenres(const QVector<genre> &genres);
     void addFavoriteGenre(const genre &Genre);
 
-    QVector<Purchase> getpurchasedBooks() const;
+    const QVector<Purchase>& getpurchasedBooks() const;
     void addPurchasedBook(const Purchase &book);
     bool hasPurchasedBook(int bookId) const;
 
-    QVector<Book> getSavedBooks() const;
+    const QVector<Book>& getSavedBooks() const;
     void addSavedBook(const Book &book);
     void removeSavedBook(int bookId);
     bool hasSavedBook(int bookId) const;
 
-    Cart& getCart();
+    const Cart& getCart() const;
 
-    QVector<Shelf> getShelves() const;
+    const QVector<Shelf>& getShelves() const;
     void addShelf(const Shelf &shelf);
     void removeShelf(const QString &shelfName);
     void renameShelf(const QString &oldName, const QString &newName);

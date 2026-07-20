@@ -7,7 +7,7 @@ User::User(const QString& username, const QString& password, const QString& secu
 
 QString User::role() const{ return "User";}
 
-QVector<genre> User::getfavoriteGenres() const {return favoriteGenres;}
+const QVector<genre>& User::getfavoriteGenres() const {return favoriteGenres;}
 void User::setFavoriteGenres(const QVector<genre> &genres) { favoriteGenres = genres; }
 
 void User::addFavoriteGenre(const genre &Genre)
@@ -16,7 +16,7 @@ void User::addFavoriteGenre(const genre &Genre)
         favoriteGenres.append(Genre);
 }
 
-QVector<Purchase> User::getpurchasedBooks() const {return purchasedBooks;}
+const QVector<Purchase>& User::getpurchasedBooks() const {return purchasedBooks;}
 
 void User::addPurchasedBook(const Purchase &book) {
     if (!hasPurchasedBook(book.getBook().getId())) {
@@ -31,7 +31,7 @@ bool User::hasPurchasedBook(int bookId) const{
     return false;
 }
 
-QVector<Book> User::getSavedBooks() const{ return savedBooks;}
+const QVector<Book>& User::getSavedBooks() const{ return savedBooks;}
 void User::addSavedBook(const Book &book) {
     if (!hasSavedBook(book.getId()))
         savedBooks.append(book);
@@ -53,9 +53,9 @@ bool User::hasSavedBook(int bookId) const{
     return false;
 }
 
-Cart& User::getCart() { return cart; }
+const Cart& User::getCart() const{return cart;}
 
-QVector<Shelf> User::getShelves() const{ return shelves;}
+const QVector<Shelf>& User::getShelves() const{ return shelves;}
 
 void User::addShelf(const Shelf &shelf) {
     if (!findShelf(shelf.getName()))

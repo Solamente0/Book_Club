@@ -30,7 +30,7 @@ bool Cart::RemoveItem(int bookId) {
     return false;
 }
 
-bool Cart::isEmpty() {
+bool Cart::isEmpty() const{
     if (Items.isEmpty())
         return true;
     return false;
@@ -40,11 +40,11 @@ const QVector<Book>& Cart::getItems() const {
     return Items;
 }
 
-int Cart::getNumberofitems() {
+int Cart::getNumberofitems() const{
     return Items.size();
 }
 
-double Cart::getTotalPrice() {
+double Cart::getTotalPrice() const{
     double sum = 0.0;
     for (const Book& eachbook : Items) {
         sum = sum + eachbook.getPrice();
@@ -52,7 +52,7 @@ double Cart::getTotalPrice() {
     return sum;
 };
 
-double Cart::getTotalDiscount() {
+double Cart::getTotalDiscount() const{
     double sum = 0.0;
     for (const Book& eachbook : Items) {
         sum = sum + (eachbook.getPrice() - eachbook.getFinalPrice());
@@ -60,11 +60,11 @@ double Cart::getTotalDiscount() {
     return sum;
 };  
 
-double Cart::getFinalPrice() {
+double Cart::getFinalPrice() const{
     return getTotalPrice() - getTotalDiscount();
 };
 
-double Cart::getTotaldiscountPercentage() {
+double Cart::getTotaldiscountPercentage() const{
     if (getTotalPrice() == 0.0) {
         return 0.0;
     }

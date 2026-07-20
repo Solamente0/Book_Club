@@ -81,6 +81,7 @@ public:
     void setPublisherUsername(const QString& username);
 
     void addReview(const Review& review);
+    const QVector<Review>& getReviews() const;
 };
 
 #endif

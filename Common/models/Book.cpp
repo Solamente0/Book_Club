@@ -38,10 +38,7 @@ double Book::getAverageRating() const{return averageRating;}
 double Book::getFinalPrice() const{
     return Price * (1.0 - Discount / 100.0);
 }
-
-void Book::addReview(const Review& review){
-    Reviews.append(review);
-}
+const QVector<Review>& Book::getReviews() const{return Reviews;}
 
 void Book::setId(const int id) {Id= id;}
 void Book::setTitle(const QString& newTitle) {Title = newTitle;}
@@ -57,3 +54,6 @@ void Book::setisActive(bool newisActive) {isActive = newisActive;}
 void Book::setAverageRating(double ave) {averageRating = ave;}
 void Book::setSalesCount(int count) {salesCount = count;}
 void Book::setPublisherUsername(const QString& username) {publisherUsername = username;}
+void Book::addReview(const Review& review){
+    Reviews.append(review);
+}

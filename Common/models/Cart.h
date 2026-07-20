@@ -15,15 +15,15 @@ public:
 
     bool AddItem(const Book& newbook);
     bool RemoveItem(int bookId);
-    bool isEmpty();
+    bool isEmpty() const;
 
     const QVector<Book>& getItems() const;
-    int getNumberofitems();
+    int getNumberofitems() const;
 
-    double getTotalPrice();            
-    double getTotalDiscount();          
-    double getFinalPrice();            
-    double getTotaldiscountPercentage();
+    double getTotalPrice() const;            
+    double getTotalDiscount() const;          
+    double getFinalPrice() const;            
+    double getTotaldiscountPercentage() const;
 
     bool CheckOut();
 };
