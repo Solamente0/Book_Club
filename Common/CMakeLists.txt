@@ -19,6 +19,7 @@ add_library(common STATIC
     users/Publisher.cpp
     users/Admin.h
     users/Admin.cpp
+    protocol.h
 )
 
 target_include_directories(common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
