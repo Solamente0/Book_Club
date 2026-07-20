@@ -28,6 +28,9 @@ public:
 
     bool addReview(int bookId, Review &review);
 
+    bool activeBook(int bookId);
+    bool inactiveBook(int bookId);
+
     QVector<Book> getTopSellingBooks(int limit = 5);
     QVector<Book> getLeastSellingBooks(int limit = 5);
     QVector<Book> getNewestBooks(int limit = 10);

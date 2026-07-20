@@ -65,6 +65,18 @@ bool BookManager::addReview(int bookId, Review &review) {
     return true;
 }
 
+bool BookManager::activeBook(int bookId) {
+    if(!BookRepository::instance().updateActiveStatus(bookId, true))
+        return false;
+    return true;
+}
+
+bool BookManager::inactiveBook(int bookId) {
+    if(!BookRepository::instance().updateActiveStatus(bookId, false))
+        return false;
+    return true;
+}
+
 QVector<Book> BookManager::getTopSellingBooks(int limit)
 {
     QVector<Book> books = BookRepository::instance().findAllActive();
