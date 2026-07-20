@@ -19,7 +19,7 @@ Book BookRepository::mapToBook(QSqlQuery &query)
     book.setSalesCount(query.value("sales_count").toInt());
     book.setAverageRating(query.value("average_rating").toDouble());
     book.setPublishDate(QDateTime::fromString(query.value("publish_date").toString(), Qt::ISODate));
-        book.setPublisherUsername(query.value("publisher_username").toString());
+    book.setPublisherUsername(query.value("publisher_username").toString());
 
     QVector<Review> reviews = findReviews(book.getId());
     for (const Review &r : reviews)
@@ -298,7 +298,15 @@ bool BookRepository::updateAverageRating(int bookId, double rating) {
 }
 
 bool BookRepository::remove(int bookId) {
-    return updateActiveStatus(bookId, false);
+    QSqlQuery query = Database::instance().createQuery();
+    query.prepare("DELETE FROM books WHERE id = :id");
+    query.bindValue(":id", bookId);
+
+    if (!query.exec()) {
+        qWarning() << "BookRepository::remove error:" << query.lastError().text();
+        return false;
+    }
+    return true;
 }
 
 bool BookRepository::saveReview(int bookId, const Review &review)
