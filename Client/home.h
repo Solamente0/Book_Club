@@ -23,12 +23,17 @@ public:
     void loadNewReleases(const QVector<Book> &books);
     void loadBestSellers(const QVector<Book> &books);
     void loadFreeBooks(const QVector<Book> &books);
+    void showSearchResults(const QVector<Book> &results, const QString &query);
+    void clearSearchResults();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
 signals:
     void cartRequested();
     void bookClicked(const Book &book);
+    void profileRequested();
+    void libraryRequested();
+    void searchRequested(const QString &query);
 private:
     QWidget *createBookWidget(const Book &book, QWidget *parent);
 
@@ -55,5 +60,11 @@ private:
     QHBoxLayout *newReleasesItemsLayout;
     QHBoxLayout *bestSellersItemsLayout;
     QHBoxLayout *freeBooksItemsLayout;
+
+    QPushButton *btnLibrary;
+
+    QFrame *searchResultsFrame;
+    QHBoxLayout *searchResultsItemsLayout;
+    QLabel *lblSearchResultsTitle;
 };
 #endif // HOME_H

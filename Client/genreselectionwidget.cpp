@@ -6,11 +6,16 @@
 GenreSelectionWidget::GenreSelectionWidget(QWidget *parent) : QWidget(parent)
 {
     this->setAttribute(Qt::WA_StyledBackground, true);
-
     this->setObjectName("genreSelectionPage");
+
+    this->setAutoFillBackground(true);
+
     this->setStyleSheet(
         "QWidget#genreSelectionPage {"
-        "   background-color: #FFFFF8;"
+        "   background-color: #FFFFFF;"
+        "}"
+        "QLabel {"
+        "   background-color: transparent;"
         "}"
         );
 
@@ -35,7 +40,11 @@ GenreSelectionWidget::GenreSelectionWidget(QWidget *parent) : QWidget(parent)
     mainLayout->addSpacing(15);
 
     QFrame *gridFrame = new QFrame(this);
-    gridFrame->setStyleSheet("background: transparent;");
+    gridFrame->setStyleSheet(
+        "QFrame {"
+        "   background-color: transparent;"
+        "}"
+        );
     QGridLayout *gridLayout = new QGridLayout(gridFrame);
     gridLayout->setSpacing(15);
 

@@ -12,6 +12,7 @@
 #include "Book.h"
 #include "User.h"
 #include "genreselectionwidget.h"
+#include "personallibrarywidget.h"
 
 MainWindow::MainWindow(QWidget *parent): QWidget(parent)
 {
@@ -32,12 +33,17 @@ MainWindow::MainWindow(QWidget *parent): QWidget(parent)
     RegisterPage = new Register(userManager, this);
     CartPage = new CartWidget(mainCart, this);
     GenreSelectionPage = new GenreSelectionWidget(this);
+    ProfilePage = new ProfileWidget(userManager, this);
+    LibraryPage = new PersonalLibraryWidget(this);
+
 
     stack->addWidget(LoginPage);
     stack->addWidget(HomePage);
     stack->addWidget(RegisterPage);
     stack->addWidget(CartPage);
     stack->addWidget(GenreSelectionPage);
+    stack->addWidget(ProfilePage);
+    stack->addWidget(LibraryPage);
 
     connect(LoginPage, &login::SignInSuccess, this, [this](User user) {
         currentUser = user;
@@ -47,25 +53,7 @@ MainWindow::MainWindow(QWidget *parent): QWidget(parent)
             return;
         }
 
-        QVector<Book> allBooks;
-        allBooks.append(Book("Fantasy Best", "Author A", genre::Fiction, 15.0));
-        allBooks.append(Book("Mystery Case", "Author B", genre::Mystery, 12.0));
-        allBooks.append(Book("World History", "Author C", genre::History, 20.0));
-        allBooks.append(Book("Love Story", "Author D", genre::Romance, 10.0));
-
-        QVector<Book> recommended;
-        for (const Book &book : allBooks) {
-            if (currentUser.getfavoriteGenres().contains(book.getGenre())) {
-                recommended.append(book);
-            }
-        }
-
-        HomePage->loadRecommendedBooks(recommended);
-        HomePage->loadGenreBooks(allBooks);
-        HomePage->loadFeaturedBooks(allBooks);
-        HomePage->loadNewReleases(allBooks);
-        HomePage->loadBestSellers(allBooks);
-        HomePage->loadFreeBooks(allBooks);
+        loadHomePageContent();
 
         stack->setCurrentWidget(HomePage);
     });
@@ -86,26 +74,9 @@ MainWindow::MainWindow(QWidget *parent): QWidget(parent)
     connect(GenreSelectionPage, &GenreSelectionWidget::genresSelected, this, [this](QVector<genre> genres) {
         currentUser.setFavoriteGenres(genres);
         currentUser.setFirstLogin(false);
+        userManager->updateUser(currentUser);
 
-        QVector<Book> allBooks;
-        allBooks.append(Book("Fantasy Best", "Author A", genre::Fiction, 15.0));
-        allBooks.append(Book("Mystery Case", "Author B", genre::Mystery, 12.0));
-        allBooks.append(Book("World History", "Author C", genre::History, 20.0));
-        allBooks.append(Book("Love Story", "Author D", genre::Romance, 10.0));
-
-        QVector<Book> recommended;
-        for (const Book &book : allBooks) {
-            if (currentUser.getfavoriteGenres().contains(book.getGenre())) {
-                recommended.append(book);
-            }
-        }
-
-        HomePage->loadRecommendedBooks(recommended);
-        HomePage->loadGenreBooks(allBooks);
-        HomePage->loadFeaturedBooks(allBooks);
-        HomePage->loadNewReleases(allBooks);
-        HomePage->loadBestSellers(allBooks);
-        HomePage->loadFreeBooks(allBooks);
+        loadHomePageContent();
 
         stack->setCurrentWidget(HomePage);
     });
@@ -119,7 +90,14 @@ MainWindow::MainWindow(QWidget *parent): QWidget(parent)
         stack->setCurrentWidget(HomePage);
     });
 
-    connect(CartPage, &CartWidget::checkoutSuccessful, this, [this]() {
+    connect(CartPage, &CartWidget::checkoutSuccessful, this, [this](const QVector<Book> &purchasedBooks) {
+        for (const Book &book : purchasedBooks) {
+            if (!currentUser.hasPurchasedBook(book.getId())) {
+                currentUser.addPurchasedBook(book);
+            }
+        }
+        userManager->updateUser(currentUser);
+
         QMessageBox::information(this, "Success", "Thank you for your purchase! Books added to your library.");
         stack->setCurrentWidget(HomePage);
     });
@@ -150,4 +128,65 @@ MainWindow::MainWindow(QWidget *parent): QWidget(parent)
     connect(ForgotPasswordPage, &ForgotPasswordWidget::backToLoginRequested, this, [this]() {
         stack->setCurrentWidget(LoginPage);
     });
+    connect(HomePage, &home::profileRequested, this, [this]() {
+        ProfilePage->loadUser(currentUser);
+        stack->setCurrentWidget(ProfilePage);
+    });
+
+    connect(ProfilePage, &ProfileWidget::backToHomeRequested, this, [this]() {
+        stack->setCurrentWidget(HomePage);
+    });
+
+    connect(ProfilePage, &ProfileWidget::userUpdated, this, [this](User updatedUser) {
+        currentUser = updatedUser;
+        userManager->updateUser(currentUser);
+    });
+    connect(HomePage, &home::libraryRequested, this, [this]() {
+        LibraryPage->loadUser(currentUser);
+        stack->setCurrentWidget(LibraryPage);
+    });
+
+    connect(HomePage, &home::searchRequested, this, [this](const QString &query) {
+        QVector<Book> results;
+        for (const Book &book : allBooks) {
+            if (book.getTitle().contains(query, Qt::CaseInsensitive) ||
+                book.getAuthor().contains(query, Qt::CaseInsensitive) ||
+                book.getPublisherUsername().contains(query, Qt::CaseInsensitive)) {
+                results.append(book);
+            }
+        }
+        HomePage->showSearchResults(results, query);
+    });
+
+    connect(LibraryPage, &PersonalLibraryWidget::backToHomeRequested, this, [this]() {
+        stack->setCurrentWidget(HomePage);
+    });
+
+    connect(LibraryPage, &PersonalLibraryWidget::userUpdated, this, [this](User updatedUser) {
+        currentUser = updatedUser;
+        userManager->updateUser(currentUser);
+    });
+}
+void MainWindow::loadHomePageContent()
+{
+    if (allBooks.isEmpty()) {
+        allBooks.append(Book("Fantasy Best", "Author A", genre::Fiction, 15.0));
+        allBooks.append(Book("Mystery Case", "Author B", genre::Mystery, 12.0));
+        allBooks.append(Book("World History", "Author C", genre::History, 20.0));
+        allBooks.append(Book("Love Story", "Author D", genre::Romance, 10.0));
+    }
+
+    QVector<Book> recommended;
+    for (const Book &book : allBooks) {
+        if (currentUser.getfavoriteGenres().contains(book.getGenre())) {
+            recommended.append(book);
+        }
+    }
+
+    HomePage->loadRecommendedBooks(recommended);
+    HomePage->loadGenreBooks(allBooks);
+    HomePage->loadFeaturedBooks(allBooks);
+    HomePage->loadNewReleases(allBooks);
+    HomePage->loadBestSellers(allBooks);
+    HomePage->loadFreeBooks(allBooks);
 }

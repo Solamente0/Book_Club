@@ -58,6 +58,12 @@ qt_add_executable(Client
     genreselectionwidget.cpp
     forgotpasswordwidget.h
     forgotpasswordwidget.cpp
+    profilewidget.h
+    profilewidget.cpp
+    personallibrarywidget.h
+    personallibrarywidget.cpp
+    publishermanager.h
+    publishermanager.cpp
 
 
 

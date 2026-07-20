@@ -18,6 +18,8 @@ public:
     bool authenticate(const QString &username, const QString &password, User &foundUser);
     bool getSecurityAnswer(const QString &username, QString &answerOut);
     bool resetPassword(const QString &username, const QString &securityAnswer, const QString &newPassword);
+    bool isUsernameTakenByAnotherUser(const QString &username, int excludeUserId) const;
+    bool updateUser(const User &updatedUser);
 };
 
 #endif // USERMANAGER_H

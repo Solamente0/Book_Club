@@ -12,6 +12,8 @@
 #include "User.h"
 #include "genreselectionwidget.h"
 #include "forgotpasswordwidget.h"
+#include "profilewidget.h"
+#include "personallibrarywidget.h"
 
 class MainWindow : public QWidget
 {
@@ -30,5 +32,9 @@ private:
     UserManager *userManager;
     User currentUser;
     ForgotPasswordWidget *ForgotPasswordPage;
+    ProfileWidget *ProfilePage;
+    PersonalLibraryWidget *LibraryPage;
+    QVector<Book> allBooks;
+    void loadHomePageContent();
 };
 #endif // MAINWINDOW_H

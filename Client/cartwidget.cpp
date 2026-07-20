@@ -204,9 +204,10 @@ void CartWidget::setupUI() {
         "}"
         );
     connect(btnCheckout, &QPushButton::clicked, this, [this]() {
+        QVector<Book> boughtBooks = m_cart->getItems();
         if (m_cart->CheckOut()) {
             updateUI();
-            emit checkoutSuccessful();
+            emit checkoutSuccessful(boughtBooks);
         }
     });
     summaryLayout->addWidget(btnCheckout);

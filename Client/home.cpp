@@ -63,6 +63,10 @@ home::home(QWidget *parent) : QWidget(parent) {
     btnProfile = new QPushButton("👤", headerWidget);
     btnProfile->setCursor(Qt::PointingHandCursor);
     btnProfile->setStyleSheet("background: transparent; border: none; font-size: 21px; color: #FF69B4;");
+    btnLibrary = new QPushButton("📚", headerWidget);
+    btnLibrary->setCursor(Qt::PointingHandCursor);
+    btnLibrary->setStyleSheet("background: transparent; border: none; font-size: 19px; color: #000000;");
+    headerLayout->addWidget(btnLibrary);
     headerLayout->addWidget(btnProfile);
 
     mainLayout->addWidget(headerWidget);
@@ -226,10 +230,52 @@ home::home(QWidget *parent) : QWidget(parent) {
 
     scrollLayout->addWidget(freeBooksFrame);
 
+    // ز) نتایج جستجو (مخفی، فقط وقتی جستجو انجام بشه نشون داده می‌شه)
+    searchResultsFrame = new QFrame(scrollWidget);
+    searchResultsFrame->setStyleSheet("background-color: rgba(253, 246, 238, 180); border-radius: 20px;");
+    QVBoxLayout *searchResultsLayout = new QVBoxLayout(searchResultsFrame);
+    searchResultsLayout->setContentsMargins(20, 18, 20, 18);
+
+    QHBoxLayout *searchResultsHeader = new QHBoxLayout();
+    lblSearchResultsTitle = new QLabel("Search Results", searchResultsFrame);
+    lblSearchResultsTitle->setFont(QFont("Segoe UI", 14, QFont::Bold));
+    lblSearchResultsTitle->setStyleSheet("color: #706357; background: transparent;");
+    QPushButton *btnClearSearch = new QPushButton("✕ Clear search", searchResultsFrame);
+    btnClearSearch->setCursor(Qt::PointingHandCursor);
+    btnClearSearch->setStyleSheet("color: #803040; background: transparent; border: none; font-weight: bold; font-size: 12px;");
+    searchResultsHeader->addWidget(lblSearchResultsTitle);
+    searchResultsHeader->addStretch();
+    searchResultsHeader->addWidget(btnClearSearch);
+    searchResultsLayout->addLayout(searchResultsHeader);
+
+    connect(btnClearSearch, &QPushButton::clicked, this, [this]() {
+        leSearch->clear();
+        clearSearchResults();
+    });
+
+    searchResultsItemsLayout = new QHBoxLayout();
+    searchResultsItemsLayout->setSpacing(15);
+    searchResultsLayout->addLayout(searchResultsItemsLayout);
+
+    scrollLayout->addWidget(searchResultsFrame);
+    searchResultsFrame->hide();
+
     scrollArea->setWidget(scrollWidget);
     mainLayout->addWidget(scrollArea);
 
     connect(btnCart, &QPushButton::clicked, this, &home::cartRequested);
+
+    connect(leSearch, &QLineEdit::returnPressed, this, [this]() {
+        QString query = leSearch->text().trimmed();
+        if (query.isEmpty()) {
+            clearSearchResults();
+        } else {
+            emit searchRequested(query);
+        }
+    });
+
+    connect(btnProfile, &QPushButton::clicked, this, &home::profileRequested);
+    connect(btnLibrary, &QPushButton::clicked, this, &home::libraryRequested);
 }
 
 QWidget *home::createBookWidget(const Book &book, QWidget *parent)
@@ -328,5 +374,40 @@ void home::paintEvent(QPaintEvent *event)
     QPainter painter(this);
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &painter, this);
 }
+void home::showSearchResults(const QVector<Book> &results, const QString &query)
+{
+    genresFrame->hide();
+    featuredFrame->hide();
+    recommendedFrame->hide();
+    newReleasesFrame->hide();
+    bestSellersFrame->hide();
+    freeBooksFrame->hide();
 
+    clearLayout(searchResultsItemsLayout);
+
+    lblSearchResultsTitle->setText(QString("Search Results for \"%1\" (%2 found)").arg(query).arg(results.size()));
+
+    if (results.isEmpty()) {
+        QLabel *lblNone = new QLabel("No books found.");
+        lblNone->setStyleSheet("color: #706357; background: transparent;");
+        searchResultsItemsLayout->addWidget(lblNone);
+    } else {
+        for (const Book &book : results) {
+            searchResultsItemsLayout->addWidget(createBookWidget(book, searchResultsFrame));
+        }
+    }
+
+    searchResultsFrame->show();
+}
+
+void home::clearSearchResults()
+{
+    searchResultsFrame->hide();
+    genresFrame->show();
+    featuredFrame->show();
+    recommendedFrame->show();
+    newReleasesFrame->show();
+    bestSellersFrame->show();
+    freeBooksFrame->show();
+}
 home::~home() = default;

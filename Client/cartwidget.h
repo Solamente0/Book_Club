@@ -22,7 +22,7 @@ public slots:
 
 signals:
     void backToHomeRequested();
-    void checkoutSuccessful();
+    void checkoutSuccessful(const QVector<Book> &purchasedBooks);
 
 protected:
     void paintEvent(QPaintEvent *event) override;

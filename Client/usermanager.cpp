@@ -53,3 +53,22 @@ bool UserManager::resetPassword(const QString &username, const QString &security
     }
     return false;
 }
+bool UserManager::isUsernameTakenByAnotherUser(const QString &username, int excludeUserId) const
+{
+    for (const User &u : registeredUsers) {
+        if (u.getUsername() == username && u.getId() != excludeUserId) {
+            return true;
+        }
+    }
+    return false;
+}
+bool UserManager::updateUser(const User &updatedUser)
+{
+    for (int i = 0; i < registeredUsers.size(); ++i) {
+        if (registeredUsers[i].getId() == updatedUser.getId()) {
+            registeredUsers[i] = updatedUser;
+            return true;
+        }
+    }
+    return false;
+}
