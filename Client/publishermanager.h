@@ -1,0 +1,25 @@
+#ifndef PUBLISHERMANAGER_H
+#define PUBLISHERMANAGER_H
+
+#include <QVector>
+#include <QString>
+#include "Publisher.h"
+
+class PublisherManager
+{
+private:
+    QVector<Publisher> registeredPublishers;
+
+public:
+    PublisherManager();
+
+    bool registerPublisher(const Publisher &newPublisher);
+    bool usernameExists(const QString &username) const;
+    bool authenticate(const QString &username, const QString &password, Publisher &foundPublisher);
+    bool updatePublisher(const Publisher &updatedPublisher);
+    bool getSecurityAnswer(const QString &username, QString &answerOut);
+    bool resetPassword(const QString &username, const QString &securityAnswer, const QString &newPassword);
+    bool isUsernameTakenByAnother(const QString &username, int excludeId) const;
+};
+
+#endif // PUBLISHERMANAGER_H
