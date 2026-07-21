@@ -13,7 +13,7 @@
 #include "User.h"
 #include "genreselectionwidget.h"
 #include "personallibrarywidget.h"
-
+#include "publishermanager.h"
 MainWindow::MainWindow(QWidget *parent): QWidget(parent)
 {
     resize(700,700);
@@ -28,7 +28,10 @@ MainWindow::MainWindow(QWidget *parent): QWidget(parent)
     stack = new QStackedWidget(this);
     mainCart = &currentUser.getCart();
 
-    LoginPage = new login(userManager, this);
+    publisherManager = new PublisherManager();
+
+
+    LoginPage = new login(userManager,publisherManager, this);
     HomePage = new home(this);
     RegisterPage = new Register(userManager, this);
     CartPage = new CartWidget(mainCart, this);

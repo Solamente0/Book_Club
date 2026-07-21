@@ -64,7 +64,12 @@ qt_add_executable(Client
     personallibrarywidget.cpp
     publishermanager.h
     publishermanager.cpp
+    registerpublisher.h
+    registerpublisher.cpp
 
+
+    ../Common/users/Publisher.h
+    ../Common/users/Publisher.cpp
 
 
 )

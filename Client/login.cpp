@@ -4,8 +4,8 @@
 #include <QMessageBox>
 #include "home.h"
 
-login::login(UserManager *manager, QWidget *parent)
-    : QWidget(parent), userManager(manager)
+login::login(UserManager *userManager, PublisherManager *publisherManager, QWidget *parent)
+    : QWidget(parent), userManager(userManager), publisherManager(publisherManager)
 {
     this->setObjectName("loginPage");
     this->setStyleSheet(
@@ -133,6 +133,22 @@ login::login(UserManager *manager, QWidget *parent)
         emit GoToSignUp();
     });
 
+    btnsignupPublisher = new QPushButton("Sign up as Publisher", loginframe);
+    btnsignupPublisher->setStyleSheet("color: #6F4E37; background: transparent; border: none; font-weight: bold; text-decoration: underline;");
+    btnsignupPublisher->setCursor(Qt::PointingHandCursor);
+    frameLayout->addWidget(btnsignupPublisher, 0, Qt::AlignCenter);
+    connect(btnsignupPublisher, &QPushButton::clicked, this, [=]() {
+        emit GoToSignUpPublisher();
+    });
+
+    btnEnterAsAdmin = new QPushButton("Enter as Admin", loginframe);
+    btnEnterAsAdmin->setStyleSheet("color: #A33A4A; background: transparent; border: none; font-size: 11px;");
+    btnEnterAsAdmin->setCursor(Qt::PointingHandCursor);
+    frameLayout->addWidget(btnEnterAsAdmin, 0, Qt::AlignCenter);
+    connect(btnEnterAsAdmin, &QPushButton::clicked, this, [=]() {
+        emit EnterAsAdminRequested();
+    });
+
     mainLayout->addWidget(loginframe, 1, 1);
     mainLayout->setRowStretch(0, 1);
     mainLayout->setRowStretch(2, 1);
@@ -140,6 +156,7 @@ login::login(UserManager *manager, QWidget *parent)
     mainLayout->setColumnStretch(2, 1);
 
     this->setLayout(mainLayout);
+
 
     connect(btnforgot, &QPushButton::clicked, this, &login::ForgotPasswordRequested);
 }
@@ -171,15 +188,18 @@ void login::onSignInClicked()
     }
 
     User foundUser;
-    bool success = userManager->authenticate(username, password, foundUser);
-
-    if (!success)
-    {
-        QMessageBox::warning(this, "Login", "Incorrect username or password.");
+    if (userManager->authenticate(username, password, foundUser)) {
+        emit SignInSuccess(foundUser);
         return;
     }
 
-    emit SignInSuccess(foundUser);
+    Publisher foundPublisher;
+    if (publisherManager->authenticate(username, password, foundPublisher)) {
+        emit PublisherSignInSuccess(foundPublisher);
+        return;
+    }
+
+    QMessageBox::warning(this, "Login", "Incorrect username or password.");
 }
 
 login::~login() {

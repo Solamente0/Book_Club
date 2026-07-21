@@ -13,13 +13,15 @@
 #include <QAction>
 #include "home.h"
 #include "UserManager.h"
+#include "PublisherManager.h"
 #include "User.h"
+#include "Publisher.h"
 
 class login : public QWidget
 {
     Q_OBJECT
 public:
-    explicit login(UserManager *manager, QWidget *parent = nullptr);
+    explicit login(UserManager *userManager, PublisherManager *publisherManager, QWidget *parent = nullptr);
     ~login();
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -27,10 +29,14 @@ private slots:
     void onSignInClicked();
 signals:
     void SignInSuccess(User user);
+    void PublisherSignInSuccess(Publisher publisher);
     void GoToSignUp();
+    void GoToSignUpPublisher();
     void ForgotPasswordRequested();
+    void EnterAsAdminRequested();
 private:
     UserManager *userManager;
+    PublisherManager *publisherManager;
 
     QFrame *loginframe;
     QLabel *lblwelcome;
@@ -44,5 +50,7 @@ private:
     QPushButton *btnsignin;
     QLabel *lblsignup;
     QPushButton *btnsignup;
+    QPushButton *btnsignupPublisher;
+    QPushButton *btnEnterAsAdmin;
 };
 #endif // LOGIN_H
