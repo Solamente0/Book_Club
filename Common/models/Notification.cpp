@@ -1,10 +1,10 @@
 #include "Notification.h"
 
 Notification::Notification()
-    :seen(false),createdAt(QDateTime::currentDateTime()) {};
+    :id(0), seen(false), createdAt(QDateTime::currentDateTime()) {};
 
 Notification::Notification(const QString &message)
-    :message(message), seen(false), createdAt(QDateTime::currentDateTime()) {};
+    :id(0), message(message), seen(false), createdAt(QDateTime::currentDateTime()) {};
 
 int Notification::getId() const{ return id;}
 void Notification::setId(const int i) { id = i;}

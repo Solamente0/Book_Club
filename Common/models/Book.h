@@ -26,7 +26,7 @@ private:
     int Id;
     QString Title;
     QString Author;
-    QString PublisherUsername;
+    QString publisherUsername;
     genre Genre;
     QString Description;
     double Price;
@@ -40,13 +40,11 @@ private:
     QVector<Review> Reviews;
 
 public:
+    Book();
     Book(const QString& title,
          const QString& author,
-         QString pubUsername,
          genre Genre,
-         QString descrip,
-         double Price,
-         double Discount
+         double Price
         );
 
     ~Book() = default;
@@ -54,7 +52,6 @@ public:
     int getId() const;
     QString getTitle() const;
     QString getAuthor() const;
-    QString getPublisherUsername() const;
     QString getDiscription() const;
     genre getGenre() const;
     double getPrice() const;
@@ -66,6 +63,7 @@ public:
     int getSalesCount() const;
     double getAverageRating() const;
     double getFinalPrice() const;
+    QString getPublisherUsername() const;
 
     void setId(const int id);
     void setTitle(const QString& newTitle);
@@ -73,16 +71,17 @@ public:
     void setGenre(genre newGenre);
     void setPrice(double newPrice);
     void setDiscount(double newDiscount);
-    void setPublisherUsername(const QString &newUsername);
     void setDescription(const QString &description);
     void setImagePath(const QString &newpath);
     void setPdfPath(const QString &newpath);
     void setisActive(bool newisActive);
     void setPublishDate(const QDateTime &date);
     void setSalesCount(int count);
+    void setAverageRating(double ave);
+    void setPublisherUsername(const QString& username);
 
     void addReview(const Review& review);
-    double calculateAverageRating() const;
+    const QVector<Review>& getReviews() const;
 };
 
 #endif
