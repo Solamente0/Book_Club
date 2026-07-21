@@ -118,6 +118,9 @@ enum class RequestType {
     GetNewestBooks,         // جدیدترین کتاب‌ها
     GetMostRatedBooks,      // محبوب‌ترین کتاب‌ها (بیشترین امتیاز)
     GetFreeBooks,           // کتاب‌های رایگان
+    
+    GetBookFile,  // دریافت فایل PDF کتاب
+    GetBookCover, // دریافت تصویر کاور
 };
 
 /**
@@ -225,6 +228,9 @@ inline QString requestTypeToString(RequestType type)
     case RequestType::GetNewestBooks:           return "GetNewestBooks";
     case RequestType::GetMostRatedBooks:        return "GetMostRatedBooks";
     case RequestType::GetFreeBooks:             return "GetFreeBooks";
+    
+    case RequestType::GetBookCover:             return "GetBookCover";
+    case RequestType::GetBookFile:              return "GetBookFile";
 
     default:                                    return "Unknown";
     }
@@ -323,6 +329,9 @@ inline RequestType stringToRequestType(const QString &str)
     if (str == "GetNewestBooks")            return RequestType::GetNewestBooks;
     if (str == "GetMostRatedBooks")         return RequestType::GetMostRatedBooks;
     if (str == "GetFreeBooks")              return RequestType::GetFreeBooks;
+
+    if (str == "GetBookCover")              return RequestType::GetBookCover;
+    if (str == "GetBookFile")               return RequestType::GetBookFile;
 
     return RequestType::Login; // مقدار پیش‌فرض
 }
