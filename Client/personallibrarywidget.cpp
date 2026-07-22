@@ -29,7 +29,7 @@ PersonalLibraryWidget::PersonalLibraryWidget(QWidget *parent)
     backButton->setCursor(Qt::PointingHandCursor);
     backButton->setStyleSheet(
         "QPushButton {"
-        "   background-color: #FFC0CB;"
+        "   background-color: #f4dbde;"
         "   color: #2C3E50;"
         "   border: none;"
         "   border-radius: 15px;"
@@ -294,10 +294,20 @@ void PersonalLibraryWidget::refreshShelves()
         shelfBoxLayout->setContentsMargins(12, 10, 12, 10);
         shelfBoxLayout->setSpacing(6);
 
+        QString shelfName = shelf.getName();
+
         QHBoxLayout *shelfHeader = new QHBoxLayout();
-        QLabel *lblShelfName = new QLabel(QString("📚 %1 (%2 books)").arg(shelf.getName()).arg(shelf.bookCount()));
+        QLabel *lblShelfName = new QLabel(QString("📚 %1 (%2 books)").arg(shelfName).arg(shelf.bookCount()));
         lblShelfName->setStyleSheet("color: #2C3E50; font-weight: bold; background: transparent;");
         shelfHeader->addWidget(lblShelfName, 1);
+
+        QPushButton *btnRename = new QPushButton("Rename", shelfBox);
+        btnRename->setCursor(Qt::PointingHandCursor);
+        btnRename->setStyleSheet(
+            "QPushButton { background-color: #FFC0CB; color: #2C3E50; border: none; border-radius: 6px; padding: 4px 10px; }"
+            "QPushButton:hover { background-color: #FFB6C1; }"
+            );
+        shelfHeader->addWidget(btnRename);
 
         QPushButton *btnDeleteShelf = new QPushButton("Delete", shelfBox);
         btnDeleteShelf->setCursor(Qt::PointingHandCursor);
@@ -308,7 +318,24 @@ void PersonalLibraryWidget::refreshShelves()
         shelfHeader->addWidget(btnDeleteShelf);
         shelfBoxLayout->addLayout(shelfHeader);
 
-        QString shelfName = shelf.getName();
+        connect(btnRename, &QPushButton::clicked, this, [this, shelfName]() {
+            if (!currentUser) return;
+            bool ok;
+            QString newName = QInputDialog::getText(this, "Rename Shelf", "New shelf name:", QLineEdit::Normal, shelfName, &ok);
+            if (!ok || newName.trimmed().isEmpty()) return;
+
+            for (const Shelf &s : currentUser->getShelves()) {
+                if (s.getName() == newName.trimmed()) {
+                    QMessageBox::warning(this, "Error", "A shelf with this name already exists.");
+                    return;
+                }
+            }
+
+            currentUser->renameShelf(shelfName, newName.trimmed());
+            emit userUpdated(*currentUser);
+            refreshShelves();
+        });
+
         connect(btnDeleteShelf, &QPushButton::clicked, this, [this, shelfName]() {
             if (!currentUser) return;
             currentUser->removeShelf(shelfName);
@@ -317,9 +344,67 @@ void PersonalLibraryWidget::refreshShelves()
         });
 
         for (const Book &book : shelf.getBooks()) {
+            QHBoxLayout *bookRow = new QHBoxLayout();
+
             QLabel *lblBook = new QLabel("  • " + book.getTitle());
             lblBook->setStyleSheet("color: #2C3E50; background: transparent;");
-            shelfBoxLayout->addWidget(lblBook);
+            bookRow->addWidget(lblBook, 1);
+
+            QComboBox *moveCombo = buildShelfComboBox();
+            for (int i = 0; i < moveCombo->count(); ++i) {
+                if (moveCombo->itemText(i) == shelfName) {
+                    moveCombo->removeItem(i);
+                    break;
+                }
+            }
+            moveCombo->setStyleSheet("background-color: white; border-radius: 6px; padding: 2px; color: #2C3E50; font-size: 11px;");
+            bookRow->addWidget(moveCombo);
+
+            QPushButton *btnMove = new QPushButton("Move", nullptr);
+            btnMove->setCursor(Qt::PointingHandCursor);
+            btnMove->setStyleSheet(
+                "QPushButton { background-color: #2C3E50; color: white; border: none; border-radius: 6px; padding: 3px 8px; font-size: 11px; }"
+                "QPushButton:hover { background-color: #FFC0CB; color: #2C3E50; }"
+                );
+            bookRow->addWidget(btnMove);
+
+            QPushButton *btnRemoveFromShelf = new QPushButton("✕", nullptr);
+            btnRemoveFromShelf->setCursor(Qt::PointingHandCursor);
+            btnRemoveFromShelf->setFixedWidth(28);
+            btnRemoveFromShelf->setStyleSheet(
+                "QPushButton { background-color: #FF69B4; color: white; border: none; border-radius: 6px; }"
+                "QPushButton:hover { background-color: #FFC0CB; color: #2C3E50; }"
+                );
+            bookRow->addWidget(btnRemoveFromShelf);
+
+            int bookId = book.getId();
+
+            connect(btnMove, &QPushButton::clicked, this, [this, shelfName, bookId, moveCombo, book]() {
+                if (!currentUser) return;
+                QString targetShelfName = moveCombo->currentText();
+                if (targetShelfName.isEmpty()) return;
+
+                Shelf *sourceShelf = currentUser->findShelf(shelfName);
+                Shelf *targetShelf = currentUser->findShelf(targetShelfName);
+                if (sourceShelf && targetShelf) {
+                    sourceShelf->removeBook(bookId);
+                    targetShelf->addBook(book);
+                    emit userUpdated(*currentUser);
+                    refreshShelves();
+                }
+            });
+
+            connect(btnRemoveFromShelf, &QPushButton::clicked, this, [this, shelfName, bookId]() {
+                if (!currentUser) return;
+                Shelf *targetShelf = currentUser->findShelf(shelfName);
+                if (targetShelf) {
+                    targetShelf->removeBook(bookId);
+                    emit userUpdated(*currentUser);
+                    refreshShelves();
+                }
+            });
+
+            shelfBoxLayout->addLayout(bookRow);
         }
 
         shelvesLayout->addWidget(shelfBox);

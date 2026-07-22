@@ -265,6 +265,8 @@ home::home(QWidget *parent) : QWidget(parent) {
 
     connect(btnCart, &QPushButton::clicked, this, &home::cartRequested);
 
+    connect(btnNotification, &QPushButton::clicked, this, &home::notificationsRequested);
+
     connect(leSearch, &QLineEdit::returnPressed, this, [this]() {
         QString query = leSearch->text().trimmed();
         if (query.isEmpty()) {

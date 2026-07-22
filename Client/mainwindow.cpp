@@ -14,7 +14,14 @@
 #include "genreselectionwidget.h"
 #include "personallibrarywidget.h"
 #include "publishermanager.h"
-MainWindow::MainWindow(QWidget *parent): QWidget(parent)
+#include "registerpublisher.h"
+#include "Admin.h"
+#include "adminloginwidget.h"
+#include "notificationwidget.h"
+#include <algorithm>
+
+MainWindow::MainWindow(QWidget *parent)
+    : QWidget(parent), systemAdmin("admin", "admin123", "N/A")
 {
     resize(700,700);
     QRect screenGeometry = QGuiApplication::primaryScreen()->availableGeometry();
@@ -29,6 +36,13 @@ MainWindow::MainWindow(QWidget *parent): QWidget(parent)
     mainCart = &currentUser.getCart();
 
     publisherManager = new PublisherManager();
+    RegisterPublisherPage = new RegisterPublisher(publisherManager, this);
+    PublisherDashboardPage = new PublisherDashboardWidget(publisherManager, this);
+
+    AdminLoginPage = new AdminLoginWidget(this);
+    AdminLoginPage->setAdminCredentials(systemAdmin.getUsername(), systemAdmin.getPassword());
+    AdminPanelPage = new AdminPanelWidget(userManager, publisherManager, this);
+
 
 
     LoginPage = new login(userManager,publisherManager, this);
@@ -38,6 +52,7 @@ MainWindow::MainWindow(QWidget *parent): QWidget(parent)
     GenreSelectionPage = new GenreSelectionWidget(this);
     ProfilePage = new ProfileWidget(userManager, this);
     LibraryPage = new PersonalLibraryWidget(this);
+    NotificationPage = new NotificationWidget(this);
 
 
     stack->addWidget(LoginPage);
@@ -47,6 +62,11 @@ MainWindow::MainWindow(QWidget *parent): QWidget(parent)
     stack->addWidget(GenreSelectionPage);
     stack->addWidget(ProfilePage);
     stack->addWidget(LibraryPage);
+    stack->addWidget(RegisterPublisherPage);
+    stack->addWidget(AdminLoginPage);
+    stack->addWidget(NotificationPage);
+    stack->addWidget(PublisherDashboardPage);
+    stack->addWidget(AdminPanelPage);
 
     connect(LoginPage, &login::SignInSuccess, this, [this](User user) {
         currentUser = user;
@@ -169,9 +189,77 @@ MainWindow::MainWindow(QWidget *parent): QWidget(parent)
         currentUser = updatedUser;
         userManager->updateUser(currentUser);
     });
+    connect(LoginPage, &login::GoToSignUpPublisher, this, [this]() {
+        stack->setCurrentWidget(RegisterPublisherPage);
+    });
+
+    connect(RegisterPublisherPage, &RegisterPublisher::goToLogin, this, [this]() {
+        stack->setCurrentWidget(LoginPage);
+    });
+
+    connect(RegisterPublisherPage, &RegisterPublisher::SignUpSuccess, this, [this]() {
+        stack->setCurrentWidget(LoginPage);
+    });
+
+
+    connect(LoginPage, &login::EnterAsAdminRequested, this, [this]() {
+        stack->setCurrentWidget(AdminLoginPage);
+    });
+
+    connect(AdminLoginPage, &AdminLoginWidget::backToLoginRequested, this, [this]() {
+        stack->setCurrentWidget(LoginPage);
+    });
+
+    connect(AdminLoginPage, &AdminLoginWidget::adminSignInSuccess, this, [this]() {
+        AdminPanelPage->refreshAll();
+        stack->setCurrentWidget(AdminPanelPage);
+    });
+
+    connect(HomePage, &home::notificationsRequested, this, [this]() {
+        NotificationPage->loadUser(currentUser);
+        stack->setCurrentWidget(NotificationPage);
+    });
+
+    connect(NotificationPage, &NotificationWidget::backToHomeRequested, this, [this]() {
+        stack->setCurrentWidget(HomePage);
+    });
+
+    connect(NotificationPage, &NotificationWidget::userUpdated, this, [this](User updatedUser) {
+        currentUser = updatedUser;
+        userManager->updateUser(currentUser);
+    });
+
+    connect(LoginPage, &login::PublisherSignInSuccess, this, [this](Publisher publisher) {
+        PublisherDashboardPage->loadPublisher(publisher);
+        stack->setCurrentWidget(PublisherDashboardPage);
+    });
+
+    connect(PublisherDashboardPage, &PublisherDashboardWidget::backToLoginRequested, this, [this]() {
+        stack->setCurrentWidget(LoginPage);
+    });
+
+    connect(PublisherDashboardPage, &PublisherDashboardWidget::publisherUpdated, this, [this](Publisher updated) {
+        publisherManager->updatePublisher(updated);
+    });
+
+    connect(PublisherDashboardPage, &PublisherDashboardWidget::catalogChanged, this, [this]() {
+        // به‌روزرسانی allBooks از همه ناشران — فعلاً ساده: فقط دوباره صفحه اصلی رو لود کن اگه باز باشه
+        loadHomePageContent();
+    });
+
+    connect(ProfilePage, &ProfileWidget::logoutRequested, this, [this]() {
+        currentUser = User();
+        stack->setCurrentWidget(LoginPage);
+    });
+
+    connect(AdminPanelPage, &AdminPanelWidget::logoutRequested, this, [this]() {
+        stack->setCurrentWidget(LoginPage);
+    });
 }
 void MainWindow::loadHomePageContent()
 {
+    allBooks = publisherManager->getAllActiveBooks();
+
     if (allBooks.isEmpty()) {
         allBooks.append(Book("Fantasy Best", "Author A", genre::Fiction, 15.0));
         allBooks.append(Book("Mystery Case", "Author B", genre::Mystery, 12.0));
@@ -179,17 +267,49 @@ void MainWindow::loadHomePageContent()
         allBooks.append(Book("Love Story", "Author D", genre::Romance, 10.0));
     }
 
+    // ۱. Recommended: کتاب‌های ژانر مورد علاقه، مرتب بر اساس محبوبیت
     QVector<Book> recommended;
     for (const Book &book : allBooks) {
         if (currentUser.getfavoriteGenres().contains(book.getGenre())) {
             recommended.append(book);
         }
     }
+    std::sort(recommended.begin(), recommended.end(), [](const Book &a, const Book &b) {
+        if (a.getAverageRating() != b.getAverageRating())
+            return a.getAverageRating() > b.getAverageRating();
+        return a.getSalesCount() > b.getSalesCount();
+    });
+
+    // ۲. Featured: بالاترین امتیاز کل فروشگاه
+    QVector<Book> featured = allBooks;
+    std::sort(featured.begin(), featured.end(), [](const Book &a, const Book &b) {
+        return a.getAverageRating() > b.getAverageRating();
+    });
+
+    // ۳. New Releases: جدیدترین‌ها
+    QVector<Book> newReleases = allBooks;
+    std::sort(newReleases.begin(), newReleases.end(), [](const Book &a, const Book &b) {
+        return a.getPublishDate() > b.getPublishDate();
+    });
+
+    // ۴. Best Sellers: بیشترین فروش
+    QVector<Book> bestSellers = allBooks;
+    std::sort(bestSellers.begin(), bestSellers.end(), [](const Book &a, const Book &b) {
+        return a.getSalesCount() > b.getSalesCount();
+    });
+
+    // ۵. Free Books: قیمت نهایی صفر
+    QVector<Book> freeBooks;
+    for (const Book &book : allBooks) {
+        if (book.getFinalPrice() <= 0.0) {
+            freeBooks.append(book);
+        }
+    }
 
     HomePage->loadRecommendedBooks(recommended);
     HomePage->loadGenreBooks(allBooks);
-    HomePage->loadFeaturedBooks(allBooks);
-    HomePage->loadNewReleases(allBooks);
-    HomePage->loadBestSellers(allBooks);
-    HomePage->loadFreeBooks(allBooks);
+    HomePage->loadFeaturedBooks(featured);
+    HomePage->loadNewReleases(newReleases);
+    HomePage->loadBestSellers(bestSellers);
+    HomePage->loadFreeBooks(freeBooks);
 }

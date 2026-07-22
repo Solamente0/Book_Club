@@ -14,7 +14,13 @@
 #include "forgotpasswordwidget.h"
 #include "profilewidget.h"
 #include "personallibrarywidget.h"
-#include "publishermanager.h"
+#include "registerpublisher.h"
+#include "Admin.h"
+#include "adminloginwidget.h"
+#include "notificationwidget.h"
+#include "publisherdashboardwidget.h"
+#include "PublisherManager.h"
+#include "adminpanelwidget.h"
 
 class MainWindow : public QWidget
 {
@@ -38,6 +44,11 @@ private:
     QVector<Book> allBooks;
     void loadHomePageContent();
     PublisherManager *publisherManager;
-
+    PublisherDashboardWidget *PublisherDashboardPage;
+    RegisterPublisher *RegisterPublisherPage;
+    Admin systemAdmin;
+    AdminLoginWidget *AdminLoginPage;
+    NotificationWidget *NotificationPage;
+    AdminPanelWidget *AdminPanelPage;
 };
 #endif // MAINWINDOW_H

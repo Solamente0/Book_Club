@@ -20,6 +20,7 @@ public:
 signals:
     void backToHomeRequested();
     void userUpdated(const User &updatedUser);
+    void logoutRequested();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -59,5 +60,7 @@ private:
     // تاریخچه خرید
     QLabel *lblPurchaseCount;
     QVBoxLayout *purchaseHistoryLayout;
+
+    QPushButton *btnLogout;
 };
 #endif // PROFILEWIDGET_H

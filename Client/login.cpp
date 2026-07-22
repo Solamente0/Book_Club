@@ -189,12 +189,20 @@ void login::onSignInClicked()
 
     User foundUser;
     if (userManager->authenticate(username, password, foundUser)) {
+        if (foundUser.isBlocked()) {
+            QMessageBox::warning(this, "Login", "Your account has been blocked. Please contact support.");
+            return;
+        }
         emit SignInSuccess(foundUser);
         return;
     }
 
     Publisher foundPublisher;
     if (publisherManager->authenticate(username, password, foundPublisher)) {
+        if (foundPublisher.isBlocked()) {
+            QMessageBox::warning(this, "Login", "Your account has been blocked. Please contact support.");
+            return;
+        }
         emit PublisherSignInSuccess(foundPublisher);
         return;
     }

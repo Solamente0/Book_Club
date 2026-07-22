@@ -72,3 +72,29 @@ bool UserManager::updateUser(const User &updatedUser)
     }
     return false;
 }
+QVector<User> UserManager::getAllUsers() const
+{
+    return registeredUsers;
+}
+
+bool UserManager::setUserBlocked(int userId, bool blocked)
+{
+    for (int i = 0; i < registeredUsers.size(); ++i) {
+        if (registeredUsers[i].getId() == userId) {
+            registeredUsers[i].setBlocked(blocked);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool UserManager::deleteUser(int userId)
+{
+    for (int i = 0; i < registeredUsers.size(); ++i) {
+        if (registeredUsers[i].getId() == userId) {
+            registeredUsers.removeAt(i);
+            return true;
+        }
+    }
+    return false;
+}

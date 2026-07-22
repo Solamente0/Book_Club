@@ -20,6 +20,10 @@ public:
     bool getSecurityAnswer(const QString &username, QString &answerOut);
     bool resetPassword(const QString &username, const QString &securityAnswer, const QString &newPassword);
     bool isUsernameTakenByAnother(const QString &username, int excludeId) const;
+    QVector<Book> getAllActiveBooks() const;
+    QVector<Publisher> getAllPublishers() const;
+    bool setPublisherBlocked(int publisherId, bool blocked);
+    bool deletePublisher(int publisherId);
 };
 
 #endif // PUBLISHERMANAGER_H

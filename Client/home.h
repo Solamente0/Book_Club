@@ -26,6 +26,7 @@ public:
     void showSearchResults(const QVector<Book> &results, const QString &query);
     void clearSearchResults();
 
+
 protected:
     void paintEvent(QPaintEvent *event) override;
 signals:
@@ -34,6 +35,7 @@ signals:
     void profileRequested();
     void libraryRequested();
     void searchRequested(const QString &query);
+    void notificationsRequested();
 private:
     QWidget *createBookWidget(const Book &book, QWidget *parent);
 

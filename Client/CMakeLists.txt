@@ -70,6 +70,19 @@ qt_add_executable(Client
 
     ../Common/users/Publisher.h
     ../Common/users/Publisher.cpp
+    adminloginwidget.h
+    adminloginwidget.cpp
+
+    ../Common/users/Admin.h
+    ../Common/users/Admin.cpp
+    notificationwidget.h
+    notificationwidget.cpp
+    addeditbookdialog.h
+    addeditbookdialog.cpp
+    publisherdashboardwidget.h
+    publisherdashboardwidget.cpp
+    adminpanelwidget.h
+    adminpanelwidget.cpp
 
 
 )

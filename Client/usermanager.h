@@ -20,6 +20,9 @@ public:
     bool resetPassword(const QString &username, const QString &securityAnswer, const QString &newPassword);
     bool isUsernameTakenByAnotherUser(const QString &username, int excludeUserId) const;
     bool updateUser(const User &updatedUser);
+    QVector<User> getAllUsers() const;
+    bool setUserBlocked(int userId, bool blocked);
+    bool deleteUser(int userId);
 };
 
 #endif // USERMANAGER_H

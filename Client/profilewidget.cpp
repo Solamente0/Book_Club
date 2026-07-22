@@ -35,7 +35,7 @@ ProfileWidget::ProfileWidget(UserManager *manager, QWidget *parent)
     backButton->setCursor(Qt::PointingHandCursor);
     backButton->setStyleSheet(
         "QPushButton {"
-        "   background-color: #FFC0CB;"
+        "   background-color: #f4dbde;"
         "   color: #2C3E50;"
         "   border: none;"
         "   border-radius: 15px;"
@@ -229,6 +229,16 @@ ProfileWidget::ProfileWidget(UserManager *manager, QWidget *parent)
     historyLayout->addLayout(purchaseHistoryLayout);
 
     mainLayout->addWidget(historyCard);
+
+    btnLogout = new QPushButton("Log Out", scrollWidget);
+    btnLogout->setCursor(Qt::PointingHandCursor);
+    btnLogout->setMinimumHeight(42);
+    btnLogout->setStyleSheet(
+        "QPushButton { background-color: #FFC0CB; color: white; border: none; border-radius: 8px; font-weight: bold; }"
+        "QPushButton:hover { background-color: #FFC0CB; color: #2C3E50; }"
+        );
+    mainLayout->addWidget(btnLogout);
+
     mainLayout->addStretch();
 
     scrollArea->setWidget(scrollWidget);
@@ -238,6 +248,7 @@ ProfileWidget::ProfileWidget(UserManager *manager, QWidget *parent)
     connect(btnSaveInfo, &QPushButton::clicked, this, &ProfileWidget::onSaveInfoClicked);
     connect(btnChangePassword, &QPushButton::clicked, this, &ProfileWidget::onChangePasswordClicked);
     connect(btnSaveGenres, &QPushButton::clicked, this, &ProfileWidget::onSaveGenresClicked);
+    connect(btnLogout, &QPushButton::clicked, this, &ProfileWidget::logoutRequested);
 }
 
 QString ProfileWidget::genreToString(genre g) const

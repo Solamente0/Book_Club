@@ -75,3 +75,41 @@ bool PublisherManager::isUsernameTakenByAnother(const QString &username, int exc
     }
     return false;
 }
+QVector<Book> PublisherManager::getAllActiveBooks() const
+{
+    QVector<Book> result;
+    for (const Publisher &p : registeredPublishers) {
+        for (const Book &b : p.getPublishedBooks()) {
+            if (b.getisActive()) {
+                result.append(b);
+            }
+        }
+    }
+    return result;
+}
+QVector<Publisher> PublisherManager::getAllPublishers() const
+{
+    return registeredPublishers;
+}
+
+bool PublisherManager::setPublisherBlocked(int publisherId, bool blocked)
+{
+    for (int i = 0; i < registeredPublishers.size(); ++i) {
+        if (registeredPublishers[i].getId() == publisherId) {
+            registeredPublishers[i].setBlocked(blocked);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool PublisherManager::deletePublisher(int publisherId)
+{
+    for (int i = 0; i < registeredPublishers.size(); ++i) {
+        if (registeredPublishers[i].getId() == publisherId) {
+            registeredPublishers.removeAt(i);
+            return true;
+        }
+    }
+    return false;
+}
