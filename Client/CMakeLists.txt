@@ -13,40 +13,40 @@ qt_add_executable(Client
     WIN32
     MACOSX_BUNDLE
 
-    login.cpp
-    login.h
+    general/login.cpp
+    general/login.h
 
-    main.cpp
+    general/main.cpp
 
     ${RESOURCES}
-    login.ui
-    home.cpp
-    home.h
-    mainwindow.h
-    mainwindow.cpp
-    register.h
-    register.cpp
+    
+    user/home.cpp
+    user/home.h
+    general/mainwindow.h
+    general/mainwindow.cpp
+    user/register.h
+    user/register.cpp
 
     ../Common/models/Book.h
     ../Common/models/Book.cpp
 
     ../Common/models/Review.h
     ../Common/models/Review.cpp
-    bookdetailwindow.h
-    bookdetailwindow.cpp
+    user/bookdetailwindow.h
+    user/bookdetailwindow.cpp
     
     ../Common/models/Cart.cpp
     ../Common/models/Cart.h
 
-    cartwidget.h
-    cartwidget.cpp
+    user/cartwidget.h
+    user/cartwidget.cpp
     
     ../Common/users/User.h
     ../Common/users/User.cpp
       ../Common/users/Member.h
     ../Common/users/Member.cpp
-    usermanager.h
-    usermanager.cpp
+    user/usermanager.h
+    user/usermanager.cpp
 
 
 
@@ -54,35 +54,35 @@ qt_add_executable(Client
     ../Common/models/Shelf.cpp
     ../Common/models/Notification.h
     ../Common/models/Notification.cpp
-    genreselectionwidget.h
-    genreselectionwidget.cpp
-    forgotpasswordwidget.h
-    forgotpasswordwidget.cpp
-    profilewidget.h
-    profilewidget.cpp
-    personallibrarywidget.h
-    personallibrarywidget.cpp
-    publishermanager.h
-    publishermanager.cpp
-    registerpublisher.h
-    registerpublisher.cpp
+    user/genreselectionwidget.h
+    user/genreselectionwidget.cpp
+    user/forgotpasswordwidget.h
+    user/forgotpasswordwidget.cpp
+    user/profilewidget.h
+    user/profilewidget.cpp
+    user/personallibrarywidget.h
+    user/personallibrarywidget.cpp
+    publisher/publishermanager.h
+    publisher/publishermanager.cpp
+    publisher/registerpublisher.h
+    publisher/registerpublisher.cpp
 
 
     ../Common/users/Publisher.h
     ../Common/users/Publisher.cpp
-    adminloginwidget.h
-    adminloginwidget.cpp
+    admin/adminloginwidget.h
+    admin/adminloginwidget.cpp
 
     ../Common/users/Admin.h
     ../Common/users/Admin.cpp
-    notificationwidget.h
-    notificationwidget.cpp
-    addeditbookdialog.h
-    addeditbookdialog.cpp
-    publisherdashboardwidget.h
-    publisherdashboardwidget.cpp
-    adminpanelwidget.h
-    adminpanelwidget.cpp
+    user/notificationwidget.h
+    user/notificationwidget.cpp
+    publisher/addeditbookdialog.h
+    publisher/addeditbookdialog.cpp
+    publisher/publisherdashboardwidget.h
+    publisher/publisherdashboardwidget.cpp
+    admin/adminpanelwidget.h
+    admin/adminpanelwidget.cpp
 
 
 )
@@ -94,6 +94,11 @@ target_link_libraries(Client
 target_include_directories(Client PRIVATE
     ../Common/models
     ../Common/users
+    ${CMAKE_CURRENT_SOURCE_DIR}/general
+    ${CMAKE_CURRENT_SOURCE_DIR}/user
+    ${CMAKE_CURRENT_SOURCE_DIR}/admin
+    ${CMAKE_CURRENT_SOURCE_DIR}/publisher
+
 )
 
 install(TARGETS Client
