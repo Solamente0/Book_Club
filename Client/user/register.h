@@ -11,11 +11,12 @@
 #include <QHBoxLayout>
 #include <QPaintEvent>
 #include "UserManager.h"
+#include "PublisherManager.h"
 
 class Register : public QWidget {
     Q_OBJECT
 public:
-    explicit Register(UserManager *manager, QWidget *parent = nullptr);
+    explicit Register(UserManager *userManager, PublisherManager *publisherManager, QWidget *parent = nullptr);
     ~Register();
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -44,5 +45,6 @@ private:
     QPushButton *btnsignup;
     QLabel *lblsignin;
     QPushButton *btnsignin;
+    PublisherManager *publisherManager;
 };
 #endif // REGISTER_H

@@ -4,8 +4,8 @@
 #include <QMessageBox>
 #include "User.h"
 
-Register::Register(UserManager *manager, QWidget *parent)
-    : QWidget(parent), userManager(manager)
+Register::Register(UserManager *userManager, PublisherManager *publisherManager, QWidget *parent)
+    : QWidget(parent), userManager(userManager), publisherManager(publisherManager)
 {
     // ۱. تنظیم نام آبجکت برای اعمال پس‌زمینه کرمی یکدست روی کل صفحه
     this->setObjectName("signUpPage");
@@ -241,10 +241,15 @@ void Register::onSignUpClicked() {
     newUser.setEmail(leemail->text().trimmed());
     newUser.setFirstLogin(true);
 
-    bool success = userManager->registerUser(newUser);
-
-    if (!success) {
+    if (userManager->usernameExists(leusername->text().trimmed()) ||
+        publisherManager->usernameExists(leusername->text().trimmed())) {
         QMessageBox::warning(this, "Validation Error", "This username is already taken. Please choose another one.");
+        return;
+    }
+
+    bool success = userManager->registerUser(newUser);
+    if (!success) {
+        QMessageBox::warning(this, "Validation Error", "Something went wrong. Please try again.");
         return;
     }
 

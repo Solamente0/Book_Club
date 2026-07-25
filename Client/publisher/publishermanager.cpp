@@ -113,3 +113,39 @@ bool PublisherManager::deletePublisher(int publisherId)
     }
     return false;
 }
+QVector<Book> PublisherManager::getAllBooks() const
+{
+    QVector<Book> result;
+    for (const Publisher &p : registeredPublishers) {
+        for (const Book &b : p.getPublishedBooks()) {
+            result.append(b);
+        }
+    }
+    return result;
+}
+
+bool PublisherManager::removeBookGlobally(int bookId)
+{
+    for (int i = 0; i < registeredPublishers.size(); ++i) {
+        for (const Book &b : registeredPublishers[i].getPublishedBooks()) {
+            if (b.getId() == bookId) {
+                registeredPublishers[i].removePublishedBook(bookId);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool PublisherManager::updateBookGlobally(const Book &book)
+{
+    for (int i = 0; i < registeredPublishers.size(); ++i) {
+        for (const Book &b : registeredPublishers[i].getPublishedBooks()) {
+            if (b.getId() == book.getId()) {
+                registeredPublishers[i].updatePublishedBook(book);
+                return true;
+            }
+        }
+    }
+    return false;
+}

@@ -277,9 +277,10 @@ void PublisherDashboardWidget::refreshBookList()
         rowLayout->setSpacing(10);
 
         QString statusText = book.getisActive() ? "🟢" : "🔴 (inactive)";
-        QLabel *lblBook = new QLabel(QString("%1 %2 — %3 | $%4")
+        QLabel *lblBook = new QLabel(QString("%1 %2 — %3 | $%4 | ⭐ %5")
                                          .arg(statusText, book.getTitle(), genreToString(book.getGenre()))
-                                         .arg(book.getFinalPrice(), 0, 'f', 2));
+                                         .arg(book.getFinalPrice(), 0, 'f', 2)
+                                         .arg(book.getAverageRating(), 0, 'f', 1));
         lblBook->setStyleSheet("color: #2C3E50; background: transparent;");
         rowLayout->addWidget(lblBook, 1);
 
@@ -306,6 +307,14 @@ void PublisherDashboardWidget::refreshBookList()
             "QPushButton:hover { background-color: #FFC0CB; color: #2C3E50; }"
             );
         rowLayout->addWidget(btnToggleActive);
+
+        QPushButton *btnDeletePermanently = new QPushButton("Delete", row);
+        btnDeletePermanently->setCursor(Qt::PointingHandCursor);
+        btnDeletePermanently->setStyleSheet(
+            "QPushButton { background-color: #FF69B4; color: white; border: none; border-radius: 6px; padding: 4px 10px; }"
+            "QPushButton:hover { background-color: #FFC0CB; color: #2C3E50; }"
+            );
+        rowLayout->addWidget(btnDeletePermanently);
 
         int bookId = book.getId();
 
@@ -340,6 +349,19 @@ void PublisherDashboardWidget::refreshBookList()
             emit publisherUpdated(currentPublisher);
             emit catalogChanged();
             refreshBookList();
+        });
+
+        connect(btnDeletePermanently, &QPushButton::clicked, this, [this, bookId]() {
+            QMessageBox::StandardButton reply = QMessageBox::question(
+                this, "Confirm Delete",
+                "This will permanently delete the book. This cannot be undone. Continue?");
+            if (reply == QMessageBox::Yes) {
+                currentPublisher.removePublishedBook(bookId);
+                emit publisherUpdated(currentPublisher);
+                emit catalogChanged();
+                refreshBookList();
+                refreshStats();
+            }
         });
 
         connect(btnToggleActive, &QPushButton::clicked, this, [this, bookId]() {
@@ -480,6 +502,7 @@ void PublisherDashboardWidget::onAddBookClicked()
 
         emit publisherUpdated(currentPublisher);
         emit catalogChanged();
+        emit bookPublished(newBook);
         refreshBookList();
         refreshStats();
     }

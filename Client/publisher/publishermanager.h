@@ -24,6 +24,10 @@ public:
     QVector<Publisher> getAllPublishers() const;
     bool setPublisherBlocked(int publisherId, bool blocked);
     bool deletePublisher(int publisherId);
+
+    QVector<Book> getAllBooks() const;
+    bool removeBookGlobally(int bookId);
+    bool updateBookGlobally(const Book &book);
 };
 
 #endif // PUBLISHERMANAGER_H

@@ -6,8 +6,8 @@
 #include <QPainter>
 #include <QPixmap>
 
-BookDetailWidget::BookDetailWidget(Cart *cart, QWidget *parent)
-    : QWidget(parent), mainCart(cart)
+BookDetailWidget::BookDetailWidget(Cart *cart, User *user, QWidget *parent)
+    : QWidget(parent), mainCart(cart), currentUserPtr(user)
 {
     this->setObjectName("bookDetailPage");
     this->setStyleSheet("QWidget#bookDetailPage { background-color: #FCFCFC; }");
@@ -191,6 +191,24 @@ BookDetailWidget::BookDetailWidget(Cart *cart, QWidget *parent)
         );
     reviewsCardLayout->addWidget(submitReviewButton);
 
+    saveButton = new QPushButton("🔖 Save for Later", infoCard);
+    saveButton->setCursor(Qt::PointingHandCursor);
+    saveButton->setStyleSheet(
+        "QPushButton { background-color: #FFC0CB; color: #2C3E50; border-radius: 8px; font-weight: bold; padding: 8px; }"
+        "QPushButton:hover { background-color: #FFB6C1; }"
+        );
+    textColumn->addWidget(saveButton);
+
+    connect(saveButton, &QPushButton::clicked, this, [this]() {
+        if (!currentUserPtr) return;
+        if (currentUserPtr->hasSavedBook(currentBook.getId())) {
+            QMessageBox::information(this, "Already Saved", "This book is already in your saved list.");
+            return;
+        }
+        currentUserPtr->addSavedBook(currentBook);
+        QMessageBox::information(this, "Saved", "Book saved for later!");
+    });
+
     mainLayout->addWidget(reviewsCard);
     mainLayout->addStretch();
 
@@ -269,10 +287,34 @@ void BookDetailWidget::refreshReviews()
     }
 
     for (const Review &r : currentBook.getReviews()) {
+        QFrame *reviewRow = new QFrame();
+        reviewRow->setStyleSheet("background-color: rgba(255,255,255,150); border-radius: 8px;");
+        QHBoxLayout *reviewRowLayout = new QHBoxLayout(reviewRow);
+        reviewRowLayout->setContentsMargins(10, 8, 10, 8);
+
         QLabel *lblReview = new QLabel(QString("%1 ★ — %2").arg(r.getStars()).arg(r.getComment()));
         lblReview->setWordWrap(true);
-        lblReview->setStyleSheet("color: #2E4D63; background-color: rgba(255,255,255,150); border-radius: 8px; padding: 8px;");
-        reviewsListLayout->addWidget(lblReview);
+        lblReview->setStyleSheet("color: #2E4D63; background: transparent;");
+        reviewRowLayout->addWidget(lblReview, 1);
+
+        if (currentUserPtr && r.getUserId() == currentUserPtr->getId()) {
+            QPushButton *btnDeleteReview = new QPushButton("Delete", reviewRow);
+            btnDeleteReview->setCursor(Qt::PointingHandCursor);
+            btnDeleteReview->setStyleSheet(
+                "QPushButton { background-color: #FF69B4; color: white; border: none; border-radius: 6px; padding: 3px 8px; font-size: 11px; }"
+                "QPushButton:hover { background-color: #FFC0CB; color: #2C3E50; }"
+                );
+            reviewRowLayout->addWidget(btnDeleteReview);
+
+            connect(btnDeleteReview, &QPushButton::clicked, this, [this]() {
+                if (!currentUserPtr) return;
+                currentBook.removeReview(currentUserPtr->getId());
+                refreshReviews();
+                ratingLabel->setText(QString("⭐ %1 / 5 (%2 reviews)").arg(currentBook.getAverageRating(), 0, 'f', 1).arg(currentBook.getReviews().size()));
+            });
+        }
+
+        reviewsListLayout->addWidget(reviewRow);
     }
 }
 
@@ -293,13 +335,20 @@ void BookDetailWidget::onSubmitReviewClicked()
         return;
     }
 
+    if (!currentUserPtr) return;
+
     int stars = starSelector->currentIndex() + 1;
-    Review newReview(0, stars, reviewTextEdit->toPlainText().trimmed());
-    currentBook.addReview(newReview);
+    Review newReview(currentUserPtr->getId(), stars, reviewTextEdit->toPlainText().trimmed());
+
+    bool success = currentBook.addReview(newReview);
+    if (!success) {
+        QMessageBox::warning(this, "Already Reviewed", "You have already submitted a review for this book. You can delete your existing review first.");
+        return;
+    }
 
     reviewTextEdit->clear();
     refreshReviews();
-    ratingLabel->setText(QString("⭐ %1 / 5").arg(currentBook.getAverageRating(), 0, 'f', 1));
+    ratingLabel->setText(QString("⭐ %1 / 5 (%2 reviews)").arg(currentBook.getAverageRating(), 0, 'f', 1).arg(currentBook.getReviews().size()));
 }
 
 void BookDetailWidget::onBackClicked()

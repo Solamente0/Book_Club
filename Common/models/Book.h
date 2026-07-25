@@ -24,6 +24,7 @@ class Book
 {
 private:
     int Id;
+    static int idCounter;
     QString Title;
     QString Author;
     QString publisherUsername;
@@ -38,6 +39,7 @@ private:
     int salesCount;
     double averageRating;
     QVector<Review> Reviews;
+    void recalculateAverageRating();
 
 public:
     Book();
@@ -65,6 +67,7 @@ public:
     double getFinalPrice() const;
     QString getPublisherUsername() const;
     const QVector<Review>& getReviews() const;
+    bool hasUserReviewed(int userId) const;
 
     void setId(const int id);
     void setTitle(const QString& newTitle);
@@ -81,7 +84,8 @@ public:
     void setAverageRating(double ave);
     void setPublisherUsername(const QString& username);
 
-    void addReview(const Review& review);
+    bool addReview(const Review& review);
+    bool removeReview(int userId);
 };
 
 #endif

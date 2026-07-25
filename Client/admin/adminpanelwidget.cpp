@@ -90,6 +90,23 @@ AdminPanelWidget::AdminPanelWidget(UserManager *userManager, PublisherManager *p
     publishersScroll->setWidget(publishersScrollWidget);
     tabs->addTab(publishersScroll, "Publishers");
 
+    // ===== تب کتاب‌ها و محتوا =====
+    QScrollArea *booksScroll = new QScrollArea();
+    booksScroll->setWidgetResizable(true);
+    booksScroll->setFrameShape(QFrame::NoFrame);
+    booksScroll->setStyleSheet("background: transparent;");
+
+    QWidget *booksScrollWidget = new QWidget();
+    booksScrollWidget->setStyleSheet("background: transparent;");
+    QVBoxLayout *booksOuterLayout = new QVBoxLayout(booksScrollWidget);
+    booksOuterLayout->setContentsMargins(20, 20, 20, 20);
+    booksListLayout = new QVBoxLayout();
+    booksListLayout->setSpacing(10);
+    booksOuterLayout->addLayout(booksListLayout);
+    booksOuterLayout->addStretch();
+    booksScroll->setWidget(booksScrollWidget);
+    tabs->addTab(booksScroll, "Books & Reviews");
+
     outerLayout->addWidget(tabs);
 
     connect(leSearch, &QLineEdit::textChanged, this, &AdminPanelWidget::onSearchTextChanged);
@@ -100,6 +117,7 @@ void AdminPanelWidget::refreshAll()
 {
     refreshUsersList();
     refreshPublishersList();
+    refreshBooksList();
 }
 
 void AdminPanelWidget::onSearchTextChanged(const QString &text)
@@ -107,6 +125,7 @@ void AdminPanelWidget::onSearchTextChanged(const QString &text)
     Q_UNUSED(text);
     refreshUsersList();
     refreshPublishersList();
+    refreshBooksList();
 }
 
 void AdminPanelWidget::refreshUsersList()
@@ -277,6 +296,118 @@ void AdminPanelWidget::refreshPublishersList()
         QLabel *lblNone = new QLabel("No publishers match your search.");
         lblNone->setStyleSheet("color: #2C3E50; background: transparent;");
         publishersListLayout->addWidget(lblNone);
+    }
+}
+
+void AdminPanelWidget::refreshBooksList()
+{
+    QLayoutItem *child;
+    while ((child = booksListLayout->takeAt(0)) != nullptr) {
+        if (child->widget()) child->widget()->deleteLater();
+        delete child;
+    }
+
+    QString filter = leSearch->text().trimmed();
+    QVector<Book> books = publisherManager->getAllBooks();
+
+    if (books.isEmpty()) {
+        QLabel *lblNone = new QLabel("No books in the system yet.");
+        lblNone->setStyleSheet("color: #2C3E50; background: transparent;");
+        booksListLayout->addWidget(lblNone);
+        return;
+    }
+
+    bool anyShown = false;
+    for (const Book &book : books) {
+        if (!filter.isEmpty() &&
+            !book.getTitle().contains(filter, Qt::CaseInsensitive) &&
+            !book.getPublisherUsername().contains(filter, Qt::CaseInsensitive)) {
+            continue;
+        }
+        anyShown = true;
+
+        QFrame *bookBox = new QFrame();
+        bookBox->setStyleSheet("background-color: rgba(255,255,255,210); border-radius: 10px;");
+        QVBoxLayout *bookBoxLayout = new QVBoxLayout(bookBox);
+        bookBoxLayout->setContentsMargins(15, 12, 15, 12);
+        bookBoxLayout->setSpacing(8);
+
+        QHBoxLayout *bookHeader = new QHBoxLayout();
+        QString statusText = book.getisActive() ? "🟢" : "🔴";
+        QLabel *lblInfo = new QLabel(QString("%1 %2 — by %3 | Publisher: %4 | ⭐ %5")
+                                         .arg(statusText, book.getTitle(), book.getAuthor(), book.getPublisherUsername())
+                                         .arg(book.getAverageRating(), 0, 'f', 1));
+        lblInfo->setStyleSheet("color: #2C3E50; background: transparent;");
+        lblInfo->setWordWrap(true);
+        bookHeader->addWidget(lblInfo, 1);
+
+        int bookId = book.getId();
+
+        QPushButton *btnDeleteBook = new QPushButton("Delete Book", bookBox);
+        btnDeleteBook->setCursor(Qt::PointingHandCursor);
+        btnDeleteBook->setStyleSheet(
+            "QPushButton { background-color: #FF69B4; color: white; border: none; border-radius: 6px; padding: 4px 10px; }"
+            "QPushButton:hover { background-color: #FFC0CB; color: #2C3E50; }"
+            );
+        bookHeader->addWidget(btnDeleteBook);
+
+        connect(btnDeleteBook, &QPushButton::clicked, this, [this, bookId]() {
+            QMessageBox::StandardButton reply = QMessageBox::question(
+                this, "Confirm Delete", "Permanently delete this book from the system?");
+            if (reply == QMessageBox::Yes) {
+                publisherManager->removeBookGlobally(bookId);
+                emit catalogChanged();
+                refreshBooksList();
+            }
+        });
+
+        bookBoxLayout->addLayout(bookHeader);
+
+        // نمایش نظرات و امکان حذف هر نظر توسط ادمین
+        if (!book.getReviews().isEmpty()) {
+            QLabel *lblReviewsTitle = new QLabel("Reviews:", bookBox);
+            lblReviewsTitle->setStyleSheet("color: #706357; font-size: 11px; background: transparent;");
+            bookBoxLayout->addWidget(lblReviewsTitle);
+
+            for (const Review &r : book.getReviews()) {
+                QHBoxLayout *reviewRow = new QHBoxLayout();
+                QLabel *lblReview = new QLabel(QString("  %1 ★ — %2").arg(r.getStars()).arg(r.getComment()));
+                lblReview->setStyleSheet("color: #2C3E50; font-size: 11px; background: transparent;");
+                lblReview->setWordWrap(true);
+                reviewRow->addWidget(lblReview, 1);
+
+                QPushButton *btnDeleteReview = new QPushButton("Remove", bookBox);
+                btnDeleteReview->setCursor(Qt::PointingHandCursor);
+                btnDeleteReview->setStyleSheet(
+                    "QPushButton { background-color: #2C3E50; color: white; border: none; border-radius: 6px; padding: 2px 8px; font-size: 10px; }"
+                    "QPushButton:hover { background-color: #FFC0CB; color: #2C3E50; }"
+                    );
+                reviewRow->addWidget(btnDeleteReview);
+
+                int reviewerId = r.getUserId();
+                connect(btnDeleteReview, &QPushButton::clicked, this, [this, bookId, reviewerId]() {
+                    QVector<Book> allBooks = publisherManager->getAllBooks();
+                    for (Book &b : allBooks) {
+                        if (b.getId() == bookId) {
+                            b.removeReview(reviewerId);
+                            publisherManager->updateBookGlobally(b);
+                            break;
+                        }
+                    }
+                    refreshBooksList();
+                });
+
+                bookBoxLayout->addLayout(reviewRow);
+            }
+        }
+
+        booksListLayout->addWidget(bookBox);
+    }
+
+    if (!anyShown) {
+        QLabel *lblNone = new QLabel("No books match your search.");
+        lblNone->setStyleSheet("color: #2C3E50; background: transparent;");
+        booksListLayout->addWidget(lblNone);
     }
 }
 

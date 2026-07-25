@@ -9,12 +9,13 @@
 #include <QTextEdit>
 #include "Book.h"
 #include "Cart.h"
+#include "User.h"
 
 class BookDetailWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit BookDetailWidget(Cart *cart, QWidget *parent = nullptr);
+    explicit BookDetailWidget(Cart *cart, User *user, QWidget *parent = nullptr);
     void loadBook(const Book &book);
 
 signals:
@@ -31,6 +32,9 @@ private slots:
 private:
     QString genreToString(genre g) const;
     void refreshReviews();
+
+    User *currentUserPtr;
+    QPushButton *saveButton;
 
     Cart *mainCart;
     Book currentBook;

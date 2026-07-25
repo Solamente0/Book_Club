@@ -32,11 +32,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     userManager = new UserManager();
 
+    publisherManager = new PublisherManager();
+
     stack = new QStackedWidget(this);
     mainCart = &currentUser.getCart();
 
-    publisherManager = new PublisherManager();
-    RegisterPublisherPage = new RegisterPublisher(publisherManager, this);
+    RegisterPage = new Register(userManager, publisherManager, this);
+    RegisterPublisherPage = new RegisterPublisher(publisherManager, userManager, this);
     PublisherDashboardPage = new PublisherDashboardWidget(publisherManager, this);
 
     AdminLoginPage = new AdminLoginWidget(this);
@@ -47,7 +49,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     LoginPage = new login(userManager,publisherManager, this);
     HomePage = new home(this);
-    RegisterPage = new Register(userManager, this);
+
     CartPage = new CartWidget(mainCart, this);
     GenreSelectionPage = new GenreSelectionWidget(this);
     ProfilePage = new ProfileWidget(userManager, this);
@@ -129,7 +131,7 @@ MainWindow::MainWindow(QWidget *parent)
     layout->setContentsMargins(0,0,0,0);
     layout->addWidget(stack);
 
-    BookDetailPage = new BookDetailWidget(mainCart, this);
+    BookDetailPage = new BookDetailWidget(mainCart, &currentUser, this);
     stack->addWidget(BookDetailPage);
 
     connect(HomePage, &home::bookClicked, this, [this](const Book &book) {
@@ -247,6 +249,21 @@ MainWindow::MainWindow(QWidget *parent)
         loadHomePageContent();
     });
 
+    connect(PublisherDashboardPage, &PublisherDashboardWidget::bookPublished, this, [this](Book newBook) {
+        QVector<User> allUsers = userManager->getAllUsers();
+        for (User u : allUsers) {
+            if (u.getfavoriteGenres().contains(newBook.getGenre())) {
+                Notification n(QString("📚 New book in your favorite genre: %1").arg(newBook.getTitle()));
+                u.addNotification(n);
+                userManager->updateUser(u);
+
+                if (u.getId() == currentUser.getId()) {
+                    currentUser = u;
+                }
+            }
+        }
+    });
+
     connect(ProfilePage, &ProfileWidget::logoutRequested, this, [this]() {
         currentUser = User();
         stack->setCurrentWidget(LoginPage);
@@ -254,6 +271,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(AdminPanelPage, &AdminPanelWidget::logoutRequested, this, [this]() {
         stack->setCurrentWidget(LoginPage);
+    });
+
+    connect(AdminPanelPage, &AdminPanelWidget::catalogChanged, this, [this]() {
+        loadHomePageContent();
     });
 }
 void MainWindow::loadHomePageContent()

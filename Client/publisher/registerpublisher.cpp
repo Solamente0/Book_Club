@@ -4,8 +4,8 @@
 #include <QMessageBox>
 #include "Publisher.h"
 
-RegisterPublisher::RegisterPublisher(PublisherManager *manager, QWidget *parent)
-    : QWidget(parent), publisherManager(manager)
+RegisterPublisher::RegisterPublisher(PublisherManager *publisherManager, UserManager *userManager, QWidget *parent)
+    : QWidget(parent), publisherManager(publisherManager), userManager(userManager)
 {
     this->setObjectName("signUpPublisherPage");
     this->setStyleSheet(
@@ -208,13 +208,20 @@ void RegisterPublisher::onSignUpClicked() {
         return;
     }
 
-    Publisher newPublisher(leusername->text().trimmed(), lepassword->text(), lesecurityanswer->text().trimmed());
+    QString username = leusername->text().trimmed();
+
+    if (userManager->usernameExists(username) || publisherManager->usernameExists(username)) {
+        QMessageBox::warning(this, "Validation Error", "This username is already taken. Please choose another one.");
+        return;
+    }
+
+    Publisher newPublisher(username, lepassword->text(), lesecurityanswer->text().trimmed());
     newPublisher.setEmail(leemail->text().trimmed());
 
     bool success = publisherManager->registerPublisher(newPublisher);
 
     if (!success) {
-        QMessageBox::warning(this, "Validation Error", "This username is already taken. Please choose another one.");
+        QMessageBox::warning(this, "Validation Error", "Something went wrong. Please try again.");
         return;
     }
 

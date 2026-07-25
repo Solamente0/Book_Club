@@ -19,6 +19,7 @@ signals:
     void backToLoginRequested();
     void publisherUpdated(const Publisher &updatedPublisher);
     void catalogChanged();
+    void bookPublished(const Book &newBook);
 
 protected:
     void paintEvent(QPaintEvent *event) override;

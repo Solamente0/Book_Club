@@ -7,6 +7,7 @@
 #include <QPushButton>
 #include "UserManager.h"
 #include "PublisherManager.h"
+#include "Book.h"
 
 class AdminPanelWidget : public QWidget
 {
@@ -17,6 +18,7 @@ public:
 
 signals:
     void logoutRequested();
+    void catalogChanged();
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -24,9 +26,12 @@ protected:
 private slots:
     void onSearchTextChanged(const QString &text);
 
+
 private:
     void refreshUsersList();
     void refreshPublishersList();
+    void refreshBooksList();
+    QVBoxLayout *booksListLayout;
 
     UserManager *userManager;
     PublisherManager *publisherManager;

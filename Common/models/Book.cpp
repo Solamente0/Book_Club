@@ -1,5 +1,7 @@
 #include "Book.h"
 
+int Book::idCounter = 1;
+
 Book::Book()
     : Id(0),
     Discount(0.0),
@@ -11,7 +13,7 @@ Book::Book(const QString& title,
            const QString& author,
            genre Genre,
            double Price)
-    : Id(0),
+    : Id(idCounter),
     Title(title),
     Author(author),
     Genre(Genre),
@@ -43,10 +45,6 @@ const QVector<Review>& Book::getReviews() const
     return Reviews;
 }
 
-void Book::addReview(const Review& review){
-    Reviews.append(review);
-}
-
 void Book::setId(const int id) {Id= id;}
 void Book::setTitle(const QString& newTitle) {Title = newTitle;}
 void Book::setAuthor(const QString& newAuthor) {Author = newAuthor;}
@@ -61,3 +59,49 @@ void Book::setisActive(bool newisActive) {isActive = newisActive;}
 void Book::setAverageRating(double ave) {averageRating = ave;}
 void Book::setSalesCount(int count) {salesCount = count;}
 void Book::setPublisherUsername(const QString& username) {publisherUsername = username;}
+
+
+bool Book::hasUserReviewed(int userId) const
+{
+    for (const Review &r : Reviews) {
+        if (r.getUserId() == userId) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Book::addReview(const Review& review)
+{
+    if (hasUserReviewed(review.getUserId())) {
+        return false; // هر کاربر فقط یک‌بار می‌تواند نظر ثبت کند
+    }
+    Reviews.append(review);
+    recalculateAverageRating();
+    return true;
+}
+
+bool Book::removeReview(int userId)
+{
+    for (int i = 0; i < Reviews.size(); ++i) {
+        if (Reviews[i].getUserId() == userId) {
+            Reviews.removeAt(i);
+            recalculateAverageRating();
+            return true;
+        }
+    }
+    return false;
+}
+
+void Book::recalculateAverageRating()
+{
+    if (Reviews.isEmpty()) {
+        averageRating = 0.0;
+        return;
+    }
+    double sum = 0.0;
+    for (const Review &r : Reviews) {
+        sum += r.getStars();
+    }
+    averageRating = sum / Reviews.size();
+}
