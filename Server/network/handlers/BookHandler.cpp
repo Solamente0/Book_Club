@@ -5,6 +5,7 @@
 #include "../../managers/FileManager.h"
 #include "../../repositories/BookRepository.h"
 
+#include <QFile>
 
 QJsonObject BookHandler::handleGetAllBooks()
 {
@@ -70,7 +71,7 @@ QJsonObject BookHandler::handleGetBookDetails(const QJsonObject &data)
     if (book.getId() == 0)
         return notFound("book not founded");
 
-    return success(bookToJson(book));
+    return success(bookToJsonFull(book));
 }
 
 QJsonObject BookHandler::handleAddBook(const QJsonObject &data, ClientHandler *client)
@@ -89,8 +90,30 @@ QJsonObject BookHandler::handleAddBook(const QJsonObject &data, ClientHandler *c
 
     if (!BookManager::instance().addBook(client->currentUser()->getId(), client->currentUser()->getUsername(),book))
         return failure("Error adding book");
+    
 
-    return success(bookToJson(book));
+    QByteArray pdfData = QByteArray::fromBase64(data["pdf_data"].toString().toLatin1());
+    QString pdfPath = FileManager::instance().savePdf(book.getId(), pdfData);
+
+    if (pdfPath.isEmpty())
+        return failure("Error saving PDF");
+
+    book.setPdfPath(pdfPath);
+    BookRepository::instance().update(book);
+
+    QString coverName = data["cover_name"].toString();
+    QString ext = coverName.split(".").last();
+
+    QByteArray coverData = QByteArray::fromBase64(data["cover_data"].toString().toLatin1());
+    QString coverPath = FileManager::instance().saveCover(book.getId(), coverData, ext);
+
+    if (coverPath.isEmpty())
+        return failure("Error saving cover");
+
+    book.setImagePath(coverPath);
+    BookRepository::instance().update(book);
+
+    return success(bookToJsonFull(book));
 }
 
 QJsonObject BookHandler::handleEditBook(const QJsonObject &data, ClientHandler *client)
@@ -109,6 +132,29 @@ QJsonObject BookHandler::handleEditBook(const QJsonObject &data, ClientHandler *
     book.setDescription(data["description"].toString());
     book.setPrice(data["price"].toDouble());
     book.setDiscount(data["discount"].toDouble());
+
+    if (data.contains("cover_data") && !data["cover_data"].toString().isEmpty()) {
+        QString coverName = data["cover_name"].toString();
+        QString ext = coverName.split(".").last();
+
+        QByteArray coverData = QByteArray::fromBase64(data["cover_data"].toString().toLatin1());
+        QString coverPath = FileManager::instance().saveCover(book.getId(), coverData, ext);
+
+        if (coverPath.isEmpty())
+            return failure("Error updating book cover");
+
+        book.setImagePath(coverPath);
+    }
+
+    if (data.contains("pdf_data") && !data["pdf_data"].toString().isEmpty()) {
+        QByteArray pdfData = QByteArray::fromBase64(data["pdf_data"].toString().toLatin1());
+        QString pdfPath = FileManager::instance().savePdf(book.getId(), pdfData);
+
+        if (pdfPath.isEmpty())
+            return failure("Error updating book pdf");
+
+        book.setPdfPath(pdfPath);
+    }
 
     if (!BookRepository::instance().update(book))
         return failure("Error in book editing");
@@ -296,6 +342,57 @@ QJsonObject BookHandler::handleGetRecommendedBooks(ClientHandler *client)
     return success(result);
 }
 
+QJsonObject BookHandler::handleGetBookFile(const QJsonObject &data, ClientHandler *client)
+{
+    if (!isLoggedIn(client))
+        return unauthorized();
+
+    int bookId = data["book_id"].toInt();
+
+    if (!PurchaseRepository::instance().hasPurchased(client->currentUser()->getId(), bookId))
+        return failure("you must buy this book first");
+
+    Book book = BookRepository::instance().findById(bookId);
+
+    QFile file(book.getPdfPath());
+    if (!file.open(QIODevice::ReadOnly))
+        return notFound("pdf not founded");
+
+    QByteArray fileData = file.readAll();
+    file.close();
+
+    QJsonObject result;
+    result["pdf_data"] = QString::fromLatin1(fileData.toBase64());
+    result["book_id"] = bookId;
+
+    return success(result);
+}
+
+QJsonObject BookHandler::handleGetBookCover(const QJsonObject &data, ClientHandler *client)
+{
+    if (!isLoggedIn(client))
+        return unauthorized();
+    
+    int bookId = data["book_id"].toInt();
+    Book book = BookRepository::instance().findById(bookId);
+
+    if (book.getId() == 0)
+        return notFound("book not founded");
+
+    QFile file(book.getImagePath());
+    if (!file.open(QIODevice::ReadOnly))
+        return notFound("cover not founded");
+
+    QByteArray coverData = file.readAll();
+    file.close();
+
+    QJsonObject result;
+    result["cover_data"] = QString::fromLatin1(coverData.toBase64());
+    result["book_id"] = bookId;
+
+    return success(result);
+}
+
 QJsonObject BookHandler::handle(RequestType type, const QJsonObject &data, ClientHandler *client)
 {
     switch (type) {
@@ -339,6 +436,10 @@ QJsonObject BookHandler::handle(RequestType type, const QJsonObject &data, Clien
         return handleGetFreeBooks();
     case RequestType::GetRecommendedBooks:
         return handleGetRecommendedBooks(client);
+    case RequestType::GetBookFile:
+        return handleGetBookFile(data, client);
+    case RequestType::GetBookCover:
+        return handleGetBookCover(data, client);
     default:
         return failure("Unknown book request");
     }

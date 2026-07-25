@@ -2,6 +2,7 @@
 #include "../ClientHandler.h"
 #include "../../managers/UserManager.h"
 #include "../../managers/BookManager.h"
+#include "../../managers/FileManager.h"
 #include "../../repositories/MemberRepository.h"
 #include "../../repositories/BookRepository.h"
 
@@ -150,8 +151,29 @@ QJsonObject AdminHandler::handleEditBookAdmin(const QJsonObject &data, ClientHan
     book.setDescription(data["description"].toString());
     book.setPrice(data["price"].toDouble());
     book.setDiscount(data["discount"].toDouble());
-    book.setImagePath(data["cover_image_path"].toString());
-    book.setPdfPath(data["pdf_file_path"].toString());
+    
+    if (data.contains("cover_data") && !data["cover_data"].toString().isEmpty()) {
+        QString coverName = data["cover_name"].toString();
+        QString ext = coverName.split(".").last();
+
+        QByteArray coverData = QByteArray::fromBase64(data["cover_data"].toString().toLatin1());
+        QString coverPath = FileManager::instance().saveCover(book.getId(), coverData, ext);
+
+        if (coverPath.isEmpty())
+            return failure("Error updating book cover");
+
+        book.setImagePath(coverPath);
+    }
+
+    if (data.contains("pdf_data") && !data["pdf_data"].toString().isEmpty()) {
+        QByteArray pdfData = QByteArray::fromBase64(data["pdf_data"].toString().toLatin1());
+        QString pdfPath = FileManager::instance().savePdf(book.getId(), pdfData);
+
+        if (pdfPath.isEmpty())
+            return failure("Error updating book pdf");
+
+        book.setPdfPath(pdfPath);
+    }
 
     if (!BookRepository::instance().update(book))
         return failure("Error in book editing");

@@ -27,6 +27,8 @@ private:
     static QJsonObject handleGetMostRatedBooks();
     static QJsonObject handleGetFreeBooks();
     static QJsonObject handleGetRecommendedBooks(ClientHandler *client);
+    static QJsonObject handleGetBookFile(const QJsonObject &data, ClientHandler *client);
+    static QJsonObject handleGetBookCover(const QJsonObject &data, ClientHandler *client);
 
     public:
     static QJsonObject handle(RequestType type,
