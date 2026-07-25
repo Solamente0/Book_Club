@@ -26,6 +26,8 @@ add_executable(BookClubServer
     managers/userManager.cpp
     managers/PurchaseManager.h
     managers/PurchaseManager.cpp
+    managers/FileManager.h
+    managers/fileManager.cpp
     network/ClientHandler.h
     network/ClientHandler.cpp
     network/Server.h
