@@ -7,7 +7,7 @@
 QJsonObject LibraryHandler::handleGetPurchasedBooks(
     ClientHandler *client)
 {
-    if (!isLoggedIn(client))
+    if (!isUser(client))
         return unauthorized();
 
     QVector<Purchase> purchases = PurchaseRepository::instance().findByUser(client->currentUser()->getId());
@@ -24,7 +24,7 @@ QJsonObject LibraryHandler::handleGetPurchasedBooks(
 
 QJsonObject LibraryHandler::handleUpdateLastReadPage(const QJsonObject &data, ClientHandler *client)
 {
-    if (!isLoggedIn(client))
+    if (!isUser(client))
         return unauthorized();
 
     int bookId = data["book_id"].toInt();
@@ -38,7 +38,7 @@ QJsonObject LibraryHandler::handleUpdateLastReadPage(const QJsonObject &data, Cl
 
 QJsonObject LibraryHandler::handleGetLastReadPage(const QJsonObject &data, ClientHandler *client)
 {
-    if (!isLoggedIn(client))
+    if (!isUser(client))
         return unauthorized();
 
     int bookId = data["book_id"].toInt();
@@ -51,7 +51,7 @@ QJsonObject LibraryHandler::handleGetLastReadPage(const QJsonObject &data, Clien
 
 QJsonObject LibraryHandler::handleSaveBook(const QJsonObject &data, ClientHandler *client)
 {
-    if (!isLoggedIn(client))
+    if (!isUser(client))
         return unauthorized();
 
     int bookId = data["book_id"].toInt();
@@ -64,7 +64,7 @@ QJsonObject LibraryHandler::handleSaveBook(const QJsonObject &data, ClientHandle
 
 QJsonObject LibraryHandler::handleRemoveSavedBook(const QJsonObject &data, ClientHandler *client)
 {
-    if (!isLoggedIn(client))
+    if (!isUser(client))
         return unauthorized();
 
     int bookId = data["book_id"].toInt();
@@ -77,7 +77,7 @@ QJsonObject LibraryHandler::handleRemoveSavedBook(const QJsonObject &data, Clien
 
 QJsonObject LibraryHandler::handleGetSavedBooks(ClientHandler *client)
 {
-    if (!isLoggedIn(client))
+    if (!isUser(client))
         return unauthorized();
 
     QVector<Book> books = SavedBookRepository::instance().findByUser(client->currentUser()->getId());
@@ -94,7 +94,7 @@ QJsonObject LibraryHandler::handleGetSavedBooks(ClientHandler *client)
 
 QJsonObject LibraryHandler::handleGetShelves(ClientHandler *client)
 {
-    if (!isLoggedIn(client))
+    if (!isUser(client))
         return unauthorized();
 
     QVector<Shelf> shelves = ShelfRepository::instance().findByUser(client->currentUser()->getId());
@@ -111,7 +111,7 @@ QJsonObject LibraryHandler::handleGetShelves(ClientHandler *client)
 
 QJsonObject LibraryHandler::handleAddShelf(const QJsonObject &data, ClientHandler *client)
 {
-    if (!isLoggedIn(client))
+    if (!isUser(client))
         return unauthorized();
 
     QString name = data["name"].toString();
@@ -127,7 +127,7 @@ QJsonObject LibraryHandler::handleAddShelf(const QJsonObject &data, ClientHandle
 
 QJsonObject LibraryHandler::handleRemoveShelf(const QJsonObject &data,ClientHandler *client)
 {
-    if (!isLoggedIn(client))
+    if (!isUser(client))
         return unauthorized();
 
     QString name = data["name"].toString();
@@ -140,7 +140,7 @@ QJsonObject LibraryHandler::handleRemoveShelf(const QJsonObject &data,ClientHand
 
 QJsonObject LibraryHandler::handleRenameShelf(const QJsonObject &data, ClientHandler *client)
 {
-    if (!isLoggedIn(client))
+    if (!isUser(client))
         return unauthorized();
 
     QString oldName = data["old_name"].toString();
@@ -157,7 +157,7 @@ QJsonObject LibraryHandler::handleRenameShelf(const QJsonObject &data, ClientHan
 
 QJsonObject LibraryHandler::handleAddBookToShelf(const QJsonObject &data, ClientHandler *client)
 {
-    if (!isLoggedIn(client))
+    if (!isUser(client))
         return unauthorized();
 
     QString shelfName = data["shelf_name"].toString();
@@ -171,7 +171,7 @@ QJsonObject LibraryHandler::handleAddBookToShelf(const QJsonObject &data, Client
 
 QJsonObject LibraryHandler::handleRemoveBookFromShelf(const QJsonObject &data, ClientHandler *client)
 {
-    if (!isLoggedIn(client))
+    if (!isUser(client))
         return unauthorized();
 
     QString shelfName = data["shelf_name"].toString();
@@ -185,7 +185,7 @@ QJsonObject LibraryHandler::handleRemoveBookFromShelf(const QJsonObject &data, C
 
 QJsonObject LibraryHandler::handleMoveBookBetweenShelves(const QJsonObject &data, ClientHandler *client)
 {
-    if (!isLoggedIn(client))
+    if (!isUser(client))
         return unauthorized();
 
     QString fromShelf = data["from_shelf"].toString();

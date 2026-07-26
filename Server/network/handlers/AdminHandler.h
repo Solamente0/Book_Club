@@ -12,6 +12,7 @@ private:
     static QJsonObject handleGetAllPublishers(ClientHandler *client);
     static QJsonObject handleSearchUsers(const QJsonObject &data, ClientHandler *client);
     static QJsonObject handleGetBlockedUsers(ClientHandler *client);
+    static QJsonObject handleGetActiveUsers(ClientHandler *client);
     static QJsonObject handleBlockUser(const QJsonObject &data, ClientHandler *client);
     static QJsonObject handleUnblockUser(const QJsonObject &data, ClientHandler *client);
     static QJsonObject handleDeleteUser(const QJsonObject &data, ClientHandler *client);

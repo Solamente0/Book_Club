@@ -4,7 +4,7 @@
 
 QJsonObject CartHandler::handleAddToCart(const QJsonObject &data, ClientHandler *client)
 {
-    if (!isLoggedIn(client))
+    if (!isUser(client))
         return unauthorized();
 
     int bookId = data["book_id"].toInt();
@@ -17,7 +17,7 @@ QJsonObject CartHandler::handleAddToCart(const QJsonObject &data, ClientHandler 
 
 QJsonObject CartHandler::handleRemoveFromCart(const QJsonObject &data, ClientHandler *client)
 {
-    if (!isLoggedIn(client))
+    if (!isUser(client))
         return unauthorized();
 
     int bookId = data["book_id"].toInt();
@@ -30,7 +30,7 @@ QJsonObject CartHandler::handleRemoveFromCart(const QJsonObject &data, ClientHan
 
 QJsonObject CartHandler::handleGetCart(ClientHandler *client)
 {
-    if (!isLoggedIn(client))
+    if (!isUser(client))
         return unauthorized();
     Cart cart = CartRepository::instance().loadCart(client->currentUser()->getId());
 
@@ -39,7 +39,7 @@ QJsonObject CartHandler::handleGetCart(ClientHandler *client)
 
 QJsonObject CartHandler::handleCheckout(ClientHandler *client)
 {
-    if (!isLoggedIn(client))
+    if (!isUser(client))
         return unauthorized();
 
     if (!PurchaseManager::instance().checkout(client->currentUser()->getId()))

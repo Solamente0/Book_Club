@@ -8,6 +8,9 @@
 
 QJsonObject AdminHandler::handleGetAllMembers(ClientHandler *client)
 {
+    if (!isAdmin(client))
+        return unauthorized();
+        
     QVector<shared_ptr<Member>> members = MemberRepository::instance().findAll();
 
     QJsonArray arr;
@@ -22,6 +25,9 @@ QJsonObject AdminHandler::handleGetAllMembers(ClientHandler *client)
 
 QJsonObject AdminHandler::handleGetAllUsers(ClientHandler *client)
 {
+    if (!isAdmin(client))
+        return unauthorized();
+
     QVector<shared_ptr<Member>> members = MemberRepository::instance().findAllUsers();
 
     QJsonArray arr;
@@ -36,6 +42,9 @@ QJsonObject AdminHandler::handleGetAllUsers(ClientHandler *client)
 
 QJsonObject AdminHandler::handleGetAllPublishers(ClientHandler *client)
 {
+    if (!isAdmin(client))
+        return unauthorized();
+
     QVector<shared_ptr<Member>> members = MemberRepository::instance().findAllPublishers();
 
     QJsonArray arr;
@@ -50,6 +59,9 @@ QJsonObject AdminHandler::handleGetAllPublishers(ClientHandler *client)
 
 QJsonObject AdminHandler::handleSearchUsers(const QJsonObject &data, ClientHandler *client)
 {
+    if (!isAdmin(client))
+        return unauthorized();
+
     QString keyword = data["keyword"].toString();
 
     QVector<shared_ptr<Member>> members = MemberRepository::instance().searchByUsername(keyword);
@@ -66,7 +78,27 @@ QJsonObject AdminHandler::handleSearchUsers(const QJsonObject &data, ClientHandl
 
 QJsonObject AdminHandler::handleGetBlockedUsers(ClientHandler *client)
 {
+    if (!isAdmin(client))
+        return unauthorized();
+
     QVector<shared_ptr<Member>> members = MemberRepository::instance().findBlockedUsers();
+
+    QJsonArray arr;
+    for (const auto &m : members)
+        arr.append(memberToJson(*m));
+
+    QJsonObject result;
+    result["users"] = arr;
+    result["count"] = members.size();
+    return success(result);
+}
+
+QJsonObject AdminHandler::handleGetActiveUsers(ClientHandler *client)
+{
+    if (!isAdmin(client))
+        return unauthorized();
+
+    QVector<shared_ptr<Member>> members = MemberRepository::instance().findActiveUsers();
 
     QJsonArray arr;
     for (const auto &m : members)
@@ -80,6 +112,9 @@ QJsonObject AdminHandler::handleGetBlockedUsers(ClientHandler *client)
 
 QJsonObject AdminHandler::handleBlockUser(const QJsonObject &data, ClientHandler *client)
 {
+    if (!isAdmin(client))
+        return unauthorized();
+
     int userId = data["user_id"].toInt();
 
     if (userId == client->currentUser()->getId())
@@ -93,6 +128,9 @@ QJsonObject AdminHandler::handleBlockUser(const QJsonObject &data, ClientHandler
 
 QJsonObject AdminHandler::handleUnblockUser(const QJsonObject &data, ClientHandler *client)
 {
+    if (!isAdmin(client))
+        return unauthorized();
+
     int userId = data["user_id"].toInt();
 
     if (!UserManager::instance().unblockUser(userId))
@@ -103,6 +141,9 @@ QJsonObject AdminHandler::handleUnblockUser(const QJsonObject &data, ClientHandl
 
 QJsonObject AdminHandler::handleDeleteUser(const QJsonObject &data, ClientHandler *client)
 {
+    if (!isAdmin(client))
+        return unauthorized();
+
     int userId = data["user_id"].toInt();
 
     if (userId == client->currentUser()->getId())
@@ -116,6 +157,9 @@ QJsonObject AdminHandler::handleDeleteUser(const QJsonObject &data, ClientHandle
 
 QJsonObject AdminHandler::handleGetAllBooksAdmin(ClientHandler *client)
 {
+    if (!isAdmin(client))
+        return unauthorized();
+
     QVector<Book> books = BookRepository::instance().findAll();
 
     QJsonArray arr;
@@ -130,6 +174,9 @@ QJsonObject AdminHandler::handleGetAllBooksAdmin(ClientHandler *client)
 
 QJsonObject AdminHandler::handleDeleteBookAdmin(const QJsonObject &data, ClientHandler *client)
 {
+    if (!isAdmin(client))
+        return unauthorized();
+
     int bookId = data["book_id"].toInt();
 
     if (!BookRepository::instance().remove(bookId))
@@ -140,6 +187,9 @@ QJsonObject AdminHandler::handleDeleteBookAdmin(const QJsonObject &data, ClientH
 
 QJsonObject AdminHandler::handleEditBookAdmin(const QJsonObject &data, ClientHandler *client)
 {
+    if (!isAdmin(client))
+        return unauthorized();
+
     Book book = BookRepository::instance().findById(data["id"].toInt());
 
     if (book.getId() == 0)
@@ -183,7 +233,7 @@ QJsonObject AdminHandler::handleEditBookAdmin(const QJsonObject &data, ClientHan
 
 QJsonObject AdminHandler::handleDeleteReviewAdmin(const QJsonObject &data, ClientHandler *client)
 {
-    if (!isLoggedIn(client) && client->currentUser()->role() != "Admin")
+    if (!isAdmin(client))
         return unauthorized();
 
     if (!BookRepository::instance().removeReview(data["book_id"].toInt(), client->currentUser()->getId()))
@@ -208,6 +258,8 @@ QJsonObject AdminHandler::handle(RequestType type,
         return handleSearchUsers(data, client);
     case RequestType::GetBlockedUsers:
         return handleGetBlockedUsers(client);
+    case RequestType::GetUnblockedUser:
+        return handleGetActiveUsers(client);
     case RequestType::BlockUser:
         return handleBlockUser(data, client);
     case RequestType::UnblockUser:
@@ -220,6 +272,8 @@ QJsonObject AdminHandler::handle(RequestType type,
         return handleDeleteBookAdmin(data, client);
     case RequestType::EditBookAdmin:
         return handleEditBookAdmin(data, client);
+    case RequestType::DeleteReviewAdmin:
+        return handleDeleteReviewAdmin(data, client);
     default:
         return failure("Unknown admin request");
     }

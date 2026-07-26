@@ -197,7 +197,7 @@ QJsonObject BookHandler::handleApplyDiscount(const QJsonObject &data, ClientHand
 
 QJsonObject BookHandler::handleAddReview(const QJsonObject &data, ClientHandler *client)
 {
-    if (!isLoggedIn(client))
+    if (!isUser(client))
         return unauthorized();
 
     int bookId = data["book_id"].toInt();
@@ -219,7 +219,7 @@ QJsonObject BookHandler::handleAddReview(const QJsonObject &data, ClientHandler 
 
 QJsonObject BookHandler::handleEditReview(const QJsonObject &data, ClientHandler *client)
 {
-    if (!isLoggedIn(client))
+    if (!isUser(client))
         return unauthorized();
 
     int bookId = data["book_id"].toInt();
@@ -238,7 +238,7 @@ QJsonObject BookHandler::handleEditReview(const QJsonObject &data, ClientHandler
 
 QJsonObject BookHandler::handleDeleteReview(const QJsonObject &data, ClientHandler *client)
 {
-    if (!isLoggedIn(client) && client->currentUser()->role() != "User")
+    if (!isUser(client))
         return unauthorized();
 
     if (!BookRepository::instance().removeReview(
@@ -325,12 +325,10 @@ QJsonObject BookHandler::handleGetFreeBooks()
 
 QJsonObject BookHandler::handleGetRecommendedBooks(ClientHandler *client)
 {
-    if (!isLoggedIn(client))
+    if (!isUser(client))
         return unauthorized();
 
     User *user = dynamic_cast<User*>(client->currentUser().get());
-    if (!user)
-        return failure("Only users can receive recommended books.");
 
     QVector<Book> books = BookManager::instance().getRecommendedBooks(user->getfavoriteGenres());
     QJsonArray arr;
