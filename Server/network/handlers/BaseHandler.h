@@ -32,7 +32,8 @@ protected:
     static bool isUser(ClientHandler *client);
     static bool isPublisher(ClientHandler *client);
     static bool isAdmin(ClientHandler *client);
-
+    
+    static QJsonObject bookToJsonFull(const Book &book);
     static QJsonObject bookToJson(const Book &book);
     static QJsonObject memberToJsonFull(const Member &member);
     static QJsonObject memberToJson(const Member &member);

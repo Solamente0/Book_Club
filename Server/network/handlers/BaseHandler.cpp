@@ -68,7 +68,7 @@ bool BaseHandler::isAdmin(ClientHandler *client) {
     return isLoggedIn(client) && client->currentUser()->role() == "Admin";
 }
 
-QJsonObject BaseHandler::bookToJson(const Book &book)
+QJsonObject BaseHandler::bookToJsonFull(const Book &book)
 {
     QJsonObject obj;
     obj["id"] = book.getId();
@@ -79,8 +79,6 @@ QJsonObject BaseHandler::bookToJson(const Book &book)
     obj["price"] = book.getPrice();
     obj["discount"] = book.getDiscount();
     obj["final_price"] = book.getFinalPrice();
-    obj["cover_image_path"] = book.getImagePath();
-    obj["pdf_file_path"] = book.getPdfPath();
     obj["is_active"] = book.getisActive();
     obj["sales_count"] = book.getSalesCount();
     obj["average_rating"] = book.getAverageRating();
@@ -91,6 +89,21 @@ QJsonObject BaseHandler::bookToJson(const Book &book)
     for (const Review &r : book.getReviews())
         reviewsArray.append(reviewToJson(r));
     obj["reviews"] = reviewsArray;
+
+    return obj;
+}
+
+QJsonObject BaseHandler::bookToJson(const Book &book)
+{
+    QJsonObject obj;
+    obj["id"] = book.getId();
+    obj["title"] = book.getTitle();
+    obj["author"] = book.getAuthor();
+    obj["genre"] = genreToString(book.getGenre());
+    obj["price"] = book.getPrice();
+    obj["discount"] = book.getDiscount();
+    obj["final_price"] = book.getFinalPrice();
+    obj["publisher_username"] = book.getPublisherUsername();
 
     return obj;
 }
