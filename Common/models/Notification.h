@@ -8,7 +8,6 @@ class Notification
 {
 private:
     int id;
-    static int idCounter;
     QString message;
     bool seen;
     QDateTime createdAt;

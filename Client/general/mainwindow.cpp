@@ -35,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent)
     publisherManager = new PublisherManager();
 
     stack = new QStackedWidget(this);
-    mainCart = &currentUser.getCart();
+    mainCart = &mainCartData;
 
     RegisterPage = new Register(userManager, publisherManager, this);
     RegisterPublisherPage = new RegisterPublisher(publisherManager, userManager, this);
@@ -118,7 +118,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(CartPage, &CartWidget::checkoutSuccessful, this, [this](const QVector<Book> &purchasedBooks) {
         for (const Book &book : purchasedBooks) {
             if (!currentUser.hasPurchasedBook(book.getId())) {
-                currentUser.addPurchasedBook(book);
+                currentUser.addPurchasedBook(Purchase(book, book.getFinalPrice(), QDateTime::currentDateTime()));
             }
         }
         userManager->updateUser(currentUser);

@@ -106,14 +106,6 @@ Register::Register(UserManager *userManager, PublisherManager *publisherManager,
     frameLayout->addWidget(leusername);
 
     // ۷. فیلد Email
-    lblemail = new QLabel("Email", signupframe);
-    lblemail->setFont(QFont("Segoe UI", 9, QFont::DemiBold));
-    frameLayout->addWidget(lblemail);
-
-    leemail = new QLineEdit(signupframe);
-    leemail->setPlaceholderText("Enter your email");
-    leemail->setMinimumHeight(38);
-    frameLayout->addWidget(leemail);
 
     // ۸. فیلد Password
     lblpassword = new QLabel("Password", signupframe);
@@ -201,10 +193,7 @@ void Register::onSignUpClicked() {
     }
 
     // ۲. بررسی خالی بودن ایمیل
-    if (leemail->text().isEmpty()) {
-        QMessageBox::warning(this, "Validation Error", "Please enter your email address.");
-        return;
-    }
+
 
     // ۳. بررسی خالی بودن رمز عبور
     if (lepassword->text().isEmpty()) {
@@ -238,7 +227,6 @@ void Register::onSignUpClicked() {
 
     // ۸. ساخت کاربر جدید و ثبتش در UserManager
     User newUser(leusername->text().trimmed(), lepassword->text(), lesecurityanswer->text().trimmed());
-    newUser.setEmail(leemail->text().trimmed());
     newUser.setFirstLogin(true);
 
     if (userManager->usernameExists(leusername->text().trimmed()) ||

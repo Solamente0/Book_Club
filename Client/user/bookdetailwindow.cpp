@@ -297,23 +297,6 @@ void BookDetailWidget::refreshReviews()
         lblReview->setStyleSheet("color: #2E4D63; background: transparent;");
         reviewRowLayout->addWidget(lblReview, 1);
 
-        if (currentUserPtr && r.getUserId() == currentUserPtr->getId()) {
-            QPushButton *btnDeleteReview = new QPushButton("Delete", reviewRow);
-            btnDeleteReview->setCursor(Qt::PointingHandCursor);
-            btnDeleteReview->setStyleSheet(
-                "QPushButton { background-color: #FF69B4; color: white; border: none; border-radius: 6px; padding: 3px 8px; font-size: 11px; }"
-                "QPushButton:hover { background-color: #FFC0CB; color: #2C3E50; }"
-                );
-            reviewRowLayout->addWidget(btnDeleteReview);
-
-            connect(btnDeleteReview, &QPushButton::clicked, this, [this]() {
-                if (!currentUserPtr) return;
-                currentBook.removeReview(currentUserPtr->getId());
-                refreshReviews();
-                ratingLabel->setText(QString("⭐ %1 / 5 (%2 reviews)").arg(currentBook.getAverageRating(), 0, 'f', 1).arg(currentBook.getReviews().size()));
-            });
-        }
-
         reviewsListLayout->addWidget(reviewRow);
     }
 }
@@ -340,11 +323,7 @@ void BookDetailWidget::onSubmitReviewClicked()
     int stars = starSelector->currentIndex() + 1;
     Review newReview(currentUserPtr->getId(), stars, reviewTextEdit->toPlainText().trimmed());
 
-    bool success = currentBook.addReview(newReview);
-    if (!success) {
-        QMessageBox::warning(this, "Already Reviewed", "You have already submitted a review for this book. You can delete your existing review first.");
-        return;
-    }
+    currentBook.addReview(newReview);
 
     reviewTextEdit->clear();
     refreshReviews();

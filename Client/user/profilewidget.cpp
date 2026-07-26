@@ -96,14 +96,8 @@ ProfileWidget::ProfileWidget(UserManager *manager, QWidget *parent)
     leUsername->setStyleSheet("background-color: rgba(255,255,255,220); border: 1px solid #FFC0CB; border-radius: 8px; padding: 6px; color: #2C3E50;");
     infoLayout->addWidget(leUsername);
 
-    QLabel *lblEmail = new QLabel("Email", infoCard);
-    lblEmail->setStyleSheet("color: #2C3E50; background: transparent; font-size: 11px;");
-    infoLayout->addWidget(lblEmail);
 
-    leEmail = new QLineEdit(infoCard);
-    leEmail->setMinimumHeight(38);
-    leEmail->setStyleSheet("background-color: rgba(255,255,255,220); border: 1px solid #FFC0CB; border-radius: 8px; padding: 6px; color: #2C3E50;");
-    infoLayout->addWidget(leEmail);
+
 
     btnSaveInfo = new QPushButton("Save Changes", infoCard);
     btnSaveInfo->setCursor(Qt::PointingHandCursor);
@@ -273,7 +267,7 @@ void ProfileWidget::loadUser(const User &user)
     currentUser = user;
 
     leUsername->setText(currentUser.getUsername());
-    leEmail->setText(currentUser.getEmail());
+
 
     refreshGenreCheckboxes();
     refreshPurchaseHistory();
@@ -295,7 +289,10 @@ void ProfileWidget::refreshPurchaseHistory()
         delete child;
     }
 
-    QVector<Book> purchased = currentUser.getpurchasedBooks();
+    QVector<Book> purchased;
+    for (const Purchase &p : currentUser.getpurchasedBooks()) {
+        purchased.append(p.getBook());
+    }
     lblPurchaseCount->setText(QString("Total books purchased: %1").arg(purchased.size()));
 
     if (purchased.isEmpty()) {
@@ -327,7 +324,7 @@ void ProfileWidget::onSaveInfoClicked()
     }
 
     currentUser.setUsername(newUsername);
-    currentUser.setEmail(leEmail->text().trimmed());
+
 
     QMessageBox::information(this, "Saved", "Your information has been updated.");
     emit userUpdated(currentUser);

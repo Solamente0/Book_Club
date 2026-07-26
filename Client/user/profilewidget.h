@@ -43,7 +43,7 @@ private:
 
     // اطلاعات حساب
     QLineEdit *leUsername;
-    QLineEdit *leEmail;
+
     QPushButton *btnSaveInfo;
 
     // تغییر رمز عبور

@@ -32,6 +32,8 @@ private:
     login *LoginPage;
     home *HomePage;
     Register *RegisterPage;
+    Cart mainCartData;
+
     CartWidget *CartPage;
     Cart *mainCart;
     BookDetailWidget *BookDetailPage;

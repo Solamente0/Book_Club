@@ -42,7 +42,7 @@ private:
 
     // اطلاعات حساب
     QLineEdit *leUsername;
-    QLineEdit *leEmail;
+
     QPushButton *btnSaveInfo;
 
     QLineEdit *leCurrentPassword;

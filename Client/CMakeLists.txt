@@ -43,6 +43,8 @@ qt_add_executable(Client
     
     ../Common/users/User.h
     ../Common/users/User.cpp
+    ../Common/models/Purchase.h
+    ../Common/models/Purchase.cpp
       ../Common/users/Member.h
     ../Common/users/Member.cpp
     user/usermanager.h

@@ -15,7 +15,6 @@ private:
     QString password;
     bool blocked;
     QString securityAnswer;
-    QString email;
     QDateTime registerDate;
     QVector<Notification> notifications;
 public:
@@ -30,14 +29,12 @@ public:
     QString getPassword() const;
     void setPassword(const QString& pass);
     QString getSecurityAnswer() const;
-    QString getEmail() const;
-    void setEmail(const QString &newEmail);
     bool isBlocked() const;
     void setBlocked(bool block);
     QDateTime getRegisterDate() const;
     void setRegisterDate(const QDateTime &date);
 
-    QVector<Notification> getNotifications() const;
+    const QVector<Notification>& getNotifications() const;
     void addNotification(const Notification &notification);
     void markNotificationRead(int notificationId);
     void markAllNotificationsRead();
@@ -46,4 +43,4 @@ public:
     virtual QString role() const = 0;
 };
 
-#endif // MEMBER_H
+#endif

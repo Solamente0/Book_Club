@@ -163,7 +163,10 @@ void PersonalLibraryWidget::refreshMyBooks()
 
     if (!currentUser) return;
 
-    QVector<Book> books = currentUser->getpurchasedBooks();
+    QVector<Book> books;
+    for (const Purchase &p : currentUser->getpurchasedBooks()) {
+        books.append(p.getBook());
+    }
     if (books.isEmpty()) {
         QLabel *lblNone = new QLabel("You haven't purchased any books yet.");
         lblNone->setStyleSheet("color: #2C3E50; background: transparent;");

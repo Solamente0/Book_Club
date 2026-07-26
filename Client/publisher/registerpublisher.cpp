@@ -99,14 +99,7 @@ RegisterPublisher::RegisterPublisher(PublisherManager *publisherManager, UserMan
     leusername->setMinimumHeight(38);
     frameLayout->addWidget(leusername);
 
-    lblemail = new QLabel("Email", signupframe);
-    lblemail->setFont(QFont("Segoe UI", 9, QFont::DemiBold));
-    frameLayout->addWidget(lblemail);
 
-    leemail = new QLineEdit(signupframe);
-    leemail->setPlaceholderText("Enter your email");
-    leemail->setMinimumHeight(38);
-    frameLayout->addWidget(leemail);
 
     lblpassword = new QLabel("Password", signupframe);
     lblpassword->setFont(QFont("Segoe UI", 9, QFont::DemiBold));
@@ -183,10 +176,7 @@ void RegisterPublisher::onSignUpClicked() {
         QMessageBox::warning(this, "Validation Error", "Please enter a username.");
         return;
     }
-    if (leemail->text().isEmpty()) {
-        QMessageBox::warning(this, "Validation Error", "Please enter your email address.");
-        return;
-    }
+
     if (lepassword->text().isEmpty()) {
         QMessageBox::warning(this, "Validation Error", "Please enter a password.");
         return;
@@ -216,7 +206,7 @@ void RegisterPublisher::onSignUpClicked() {
     }
 
     Publisher newPublisher(username, lepassword->text(), lesecurityanswer->text().trimmed());
-    newPublisher.setEmail(leemail->text().trimmed());
+
 
     bool success = publisherManager->registerPublisher(newPublisher);
 

@@ -34,8 +34,7 @@ private:
     QLabel *lblsubtitle;
     QLabel *lblusername;
     QLineEdit *leusername;
-    QLabel *lblemail;
-    QLineEdit *leemail;
+
     QLabel *lblpassword;
     QLineEdit *lepassword;
     QLabel *lblconfirmpassword;

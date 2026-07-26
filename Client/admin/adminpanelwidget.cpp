@@ -163,7 +163,7 @@ void AdminPanelWidget::refreshUsersList()
 
         QString statusText = u.isBlocked() ? "🔴 Blocked" : "🟢 Active";
         QLabel *lblInfo = new QLabel(QString("%1 — %2 | Joined: %3 | %4")
-                                         .arg(u.getUsername(), u.getEmail())
+
                                          .arg(u.getRegisterDate().toString("yyyy-MM-dd"))
                                          .arg(statusText));
         lblInfo->setStyleSheet("color: #2C3E50; background: transparent;");
@@ -247,7 +247,7 @@ void AdminPanelWidget::refreshPublishersList()
 
         QString statusText = p.isBlocked() ? "🔴 Blocked" : "🟢 Active";
         QLabel *lblInfo = new QLabel(QString("%1 — %2 | Books: %3 | Revenue: $%4 | Joined: %5 | %6")
-                                         .arg(p.getUsername(), p.getEmail())
+
                                          .arg(p.getPublishedBooks().size())
                                          .arg(p.getTotalRevenue(), 0, 'f', 2)
                                          .arg(p.getRegisterDate().toString("yyyy-MM-dd"))
@@ -375,27 +375,6 @@ void AdminPanelWidget::refreshBooksList()
                 lblReview->setStyleSheet("color: #2C3E50; font-size: 11px; background: transparent;");
                 lblReview->setWordWrap(true);
                 reviewRow->addWidget(lblReview, 1);
-
-                QPushButton *btnDeleteReview = new QPushButton("Remove", bookBox);
-                btnDeleteReview->setCursor(Qt::PointingHandCursor);
-                btnDeleteReview->setStyleSheet(
-                    "QPushButton { background-color: #2C3E50; color: white; border: none; border-radius: 6px; padding: 2px 8px; font-size: 10px; }"
-                    "QPushButton:hover { background-color: #FFC0CB; color: #2C3E50; }"
-                    );
-                reviewRow->addWidget(btnDeleteReview);
-
-                int reviewerId = r.getUserId();
-                connect(btnDeleteReview, &QPushButton::clicked, this, [this, bookId, reviewerId]() {
-                    QVector<Book> allBooks = publisherManager->getAllBooks();
-                    for (Book &b : allBooks) {
-                        if (b.getId() == bookId) {
-                            b.removeReview(reviewerId);
-                            publisherManager->updateBookGlobally(b);
-                            break;
-                        }
-                    }
-                    refreshBooksList();
-                });
 
                 bookBoxLayout->addLayout(reviewRow);
             }

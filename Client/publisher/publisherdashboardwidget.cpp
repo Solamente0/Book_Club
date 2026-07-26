@@ -80,15 +80,7 @@ PublisherDashboardWidget::PublisherDashboardWidget(PublisherManager *manager, QW
     leUsername->setStyleSheet("background-color: rgba(255,255,255,220); border: 1px solid #FFC0CB; border-radius: 8px; padding: 6px; color: #2C3E50;");
     infoLayout->addWidget(leUsername);
 
-    QLabel *lblEmail = new QLabel("Email", infoCard);
-    lblEmail->setStyleSheet("color: #2C3E50; background: transparent; font-size: 11px;");
-    infoLayout->addWidget(lblEmail);
 
-    leEmail = new QLineEdit(infoCard);
-    leEmail->setPlaceholderText("Enter your email");
-    leEmail->setMinimumHeight(38);
-    leEmail->setStyleSheet("background-color: rgba(255,255,255,220); border: 1px solid #FFC0CB; border-radius: 8px; padding: 6px; color: #2C3E50;");
-    infoLayout->addWidget(leEmail);
 
 
     btnSaveInfo = new QPushButton("Save Changes", infoCard);
@@ -246,7 +238,7 @@ void PublisherDashboardWidget::loadPublisher(const Publisher &publisher)
 {
     currentPublisher = publisher;
     leUsername->setText(currentPublisher.getUsername());
-    leEmail->setText(currentPublisher.getEmail());
+
 
     refreshBookList();
     refreshStats();
@@ -452,7 +444,7 @@ void PublisherDashboardWidget::onSaveInfoClicked()
     }
 
     currentPublisher.setUsername(newUsername);
-    currentPublisher.setEmail(leEmail->text().trimmed());
+
 
     QMessageBox::information(this, "Saved", "Your information has been updated.");
     emit publisherUpdated(currentPublisher);
