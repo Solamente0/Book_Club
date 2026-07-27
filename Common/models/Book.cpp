@@ -56,4 +56,40 @@ void Book::setSalesCount(int count) {salesCount = count;}
 void Book::setPublisherUsername(const QString& username) {publisherUsername = username;}
 void Book::addReview(const Review& review){
     Reviews.append(review);
+    recalculateAverageRating();
+}
+
+bool Book::editReview(int userId, int newStars, const QString &newComment) {
+    for (Review &r : Reviews) {
+        if (r.getUserId() == userId) {
+            r.Edit(newStars, newComment);
+            recalculateAverageRating();
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Book::removeReview(int userId) {
+    for (int i = 0; i < Reviews.size(); ++i) {
+        if (Reviews[i].getUserId() == userId) {
+            Reviews.removeAt(i);
+            recalculateAverageRating();
+            return true;
+        }
+    }
+    return false;
+}
+
+void Book::recalculateAverageRating() {
+    if (Reviews.isEmpty()) {
+        averageRating = 0.0;
+        return;
+    }
+
+    double sum = 0.0;
+    for (const Review &r : Reviews)
+        sum += r.getStars();
+
+    averageRating = sum / Reviews.size();
 }
