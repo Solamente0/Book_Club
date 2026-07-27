@@ -29,9 +29,19 @@ MainWindow::MainWindow(QWidget *parent)
         screenGeometry.center().y() - height() / 2
         );
 
-    if (!NetworkClient::instance().connectToServer()) {
+    // Defaults to 127.0.0.1:1234 (server on the same machine); set
+    // BOOKCLUB_SERVER_HOST / BOOKCLUB_SERVER_PORT to point this client at a
+    // server running on a different machine (e.g. testing a Windows client
+    // against a Linux server, or vice versa).
+    QString serverHost = qEnvironmentVariable("BOOKCLUB_SERVER_HOST", "127.0.0.1");
+    quint16 serverPort = static_cast<quint16>(qEnvironmentVariableIntValue("BOOKCLUB_SERVER_PORT") == 0
+        ? 1234
+        : qEnvironmentVariableIntValue("BOOKCLUB_SERVER_PORT"));
+
+    if (!NetworkClient::instance().connectToServer(serverHost, serverPort)) {
         QMessageBox::warning(this, "Connection Error",
-            "Could not connect to the BookClub server. Some features will be unavailable until the connection succeeds.");
+            QString("Could not connect to the BookClub server at %1:%2. Some features will be unavailable until the connection succeeds.")
+                .arg(serverHost).arg(serverPort));
     }
 
     userManager = new UserManager();
