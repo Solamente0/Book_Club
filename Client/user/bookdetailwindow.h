@@ -32,8 +32,10 @@ private slots:
 private:
     QString genreToString(genre g) const;
     void refreshReviews();
+    void resetReviewForm();
 
     User *currentUserPtr;
+    bool editingReview = false;
     QPushButton *saveButton;
 
     Cart *mainCart;

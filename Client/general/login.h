@@ -13,7 +13,7 @@
 #include <QAction>
 #include "home.h"
 #include "UserManager.h"
-#include "PublisherManager.h"
+#include "publishermanager.h"
 #include "User.h"
 #include "Publisher.h"
 

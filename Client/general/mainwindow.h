@@ -19,7 +19,7 @@
 #include "adminloginwidget.h"
 #include "notificationwidget.h"
 #include "publisherdashboardwidget.h"
-#include "PublisherManager.h"
+#include "publishermanager.h"
 #include "adminpanelwidget.h"
 
 class MainWindow : public QWidget

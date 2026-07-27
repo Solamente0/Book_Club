@@ -1,4 +1,4 @@
-#include "member.h"
+#include "Member.h"
 
 Member::Member():ID(0), blocked(false) {};
 Member::Member(const QString& username, const QString& password, const QString& securityAnswer): 

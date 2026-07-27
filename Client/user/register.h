@@ -11,7 +11,7 @@
 #include <QHBoxLayout>
 #include <QPaintEvent>
 #include "UserManager.h"
-#include "PublisherManager.h"
+#include "publishermanager.h"
 
 class Register : public QWidget {
     Q_OBJECT

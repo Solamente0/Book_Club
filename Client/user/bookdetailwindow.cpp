@@ -240,6 +240,7 @@ QString BookDetailWidget::genreToString(genre g) const
 void BookDetailWidget::loadBook(const Book &book)
 {
     currentBook = book;
+    resetReviewForm();
 
     titleLabel->setText(currentBook.getTitle());
     authorLabel->setText("by " + currentBook.getAuthor());
@@ -297,8 +298,56 @@ void BookDetailWidget::refreshReviews()
         lblReview->setStyleSheet("color: #2E4D63; background: transparent;");
         reviewRowLayout->addWidget(lblReview, 1);
 
+        if (currentUserPtr && r.getUserId() == currentUserPtr->getId()) {
+            int reviewUserId = r.getUserId();
+            int reviewStars = r.getStars();
+            QString reviewComment = r.getComment();
+
+            QPushButton *btnEdit = new QPushButton("✏️ Edit", reviewRow);
+            btnEdit->setCursor(Qt::PointingHandCursor);
+            btnEdit->setStyleSheet(
+                "QPushButton { background-color: #FFD1DC; color: #803040; border: none; border-radius: 6px; padding: 4px 10px; }"
+                "QPushButton:hover { background-color: rgba(244, 219, 222, 220); }"
+                );
+            reviewRowLayout->addWidget(btnEdit);
+
+            QPushButton *btnDelete = new QPushButton("🗑️ Delete", reviewRow);
+            btnDelete->setCursor(Qt::PointingHandCursor);
+            btnDelete->setStyleSheet(
+                "QPushButton { background-color: #FF69B4; color: white; border: none; border-radius: 6px; padding: 4px 10px; }"
+                "QPushButton:hover { background-color: #FFC0CB; color: #2C3E50; }"
+                );
+            reviewRowLayout->addWidget(btnDelete);
+
+            connect(btnEdit, &QPushButton::clicked, this, [this, reviewStars, reviewComment]() {
+                editingReview = true;
+                starSelector->setCurrentIndex(reviewStars - 1);
+                reviewTextEdit->setPlainText(reviewComment);
+                submitReviewButton->setText("Update Review");
+            });
+
+            connect(btnDelete, &QPushButton::clicked, this, [this, reviewUserId]() {
+                if (QMessageBox::question(this, "Delete Review", "Are you sure you want to delete your review?")
+                    != QMessageBox::Yes)
+                    return;
+
+                currentBook.removeReview(reviewUserId);
+                resetReviewForm();
+                refreshReviews();
+                ratingLabel->setText(QString("⭐ %1 / 5 (%2 reviews)").arg(currentBook.getAverageRating(), 0, 'f', 1).arg(currentBook.getReviews().size()));
+            });
+        }
+
         reviewsListLayout->addWidget(reviewRow);
     }
+}
+
+void BookDetailWidget::resetReviewForm()
+{
+    editingReview = false;
+    reviewTextEdit->clear();
+    starSelector->setCurrentIndex(4);
+    submitReviewButton->setText("Submit Review");
 }
 
 void BookDetailWidget::onAddToCartClicked()
@@ -321,11 +370,16 @@ void BookDetailWidget::onSubmitReviewClicked()
     if (!currentUserPtr) return;
 
     int stars = starSelector->currentIndex() + 1;
-    Review newReview(currentUserPtr->getId(), stars, reviewTextEdit->toPlainText().trimmed());
+    QString comment = reviewTextEdit->toPlainText().trimmed();
 
-    currentBook.addReview(newReview);
+    if (editingReview) {
+        currentBook.editReview(currentUserPtr->getId(), stars, comment);
+    } else {
+        Review newReview(currentUserPtr->getId(), stars, comment);
+        currentBook.addReview(newReview);
+    }
 
-    reviewTextEdit->clear();
+    resetReviewForm();
     refreshReviews();
     ratingLabel->setText(QString("⭐ %1 / 5 (%2 reviews)").arg(currentBook.getAverageRating(), 0, 'f', 1).arg(currentBook.getReviews().size()));
 }

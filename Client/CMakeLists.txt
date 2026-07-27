@@ -47,8 +47,8 @@ qt_add_executable(Client
     ../Common/models/Purchase.cpp
       ../Common/users/Member.h
     ../Common/users/Member.cpp
-    user/usermanager.h
-    user/usermanager.cpp
+    user/UserManager.h
+    user/UserManager.cpp
 
 
 

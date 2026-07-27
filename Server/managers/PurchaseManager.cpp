@@ -39,9 +39,9 @@ bool PurchaseManager::checkout(int userId)
                 double newRevenue = pub->getTotalRevenue() + book.getFinalPrice();
                 MemberRepository::instance().updateTotalRevenue(pub->getId(), newRevenue);
             }
-        }
 
-        NotificationManager::instance().notifNewSale(publisher->getId(), book);
+            NotificationManager::instance().notifNewSale(publisher->getId(), book);
+        }
     }
 
     CartRepository::instance().clear(userId);

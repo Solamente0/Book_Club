@@ -1,4 +1,4 @@
-#include "PublisherManager.h"
+#include "publishermanager.h"
 
 PublisherManager::PublisherManager() {}
 

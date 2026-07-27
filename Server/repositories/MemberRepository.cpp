@@ -4,6 +4,11 @@
 #include <QDateTime>
 
 #include "../managers/AuthManager.h"
+#include "BookRepository.h"
+#include "PurchaseRepository.h"
+#include "SavedBookRepository.h"
+#include "ShelfRepository.h"
+#include "NotificationRepository.h"
 
 shared_ptr<Member> MemberRepository::mapToMember(QSqlQuery &query)
 {
@@ -37,16 +42,29 @@ shared_ptr<Member> MemberRepository::mapToMember(QSqlQuery &query)
         if (countQuery.next())
             user->setPurchaseCount(countQuery.value(0).toInt());
 
+        for (const Purchase &p : PurchaseRepository::instance().findByUser(id))
+            user->addPurchasedBook(p);
+
+        for (const Book &b : SavedBookRepository::instance().findByUser(id))
+            user->addSavedBook(b);
+
+        for (const Shelf &s : ShelfRepository::instance().findByUser(id))
+            user->addShelf(s);
+
         member = user;
 
-    } 
+    }
     else if (role == "Publisher") {
         auto publisher = make_shared<Publisher>(username, password, secAnswer);
         publisher->setId(id);
         publisher->setTotalRevenue(query.value("total_revenue").toDouble());
+
+        for (const Book &b : BookRepository::instance().findByPublisher(id))
+            publisher->addPublishedBook(b);
+
         member = publisher;
 
-    } 
+    }
     else if (role == "Admin") {
         auto admin = make_shared<Admin>(username, password, secAnswer);
         admin->setId(id);
@@ -56,6 +74,9 @@ shared_ptr<Member> MemberRepository::mapToMember(QSqlQuery &query)
     if (member) {
         member->setBlocked(query.value("is_blocked").toInt() == 1);
         member->setRegisterDate(QDateTime::fromString(query.value("register_date").toString(),Qt::ISODate));
+
+        for (const Notification &n : NotificationRepository::instance().findByUser(id))
+            member->addNotification(n);
     }
 
     return member;
@@ -247,9 +268,9 @@ bool MemberRepository::updateUsername(int userId, const QString &newUsername) {
 bool MemberRepository::updatePassword(int userId, const QString &newPassword, const QString &newsalt)
 {
     QSqlQuery query = Database::instance().createQuery();
-    query.prepare("UPDATE members SET"
-                  "password = :password,"
-                  "salt = :salt"
+    query.prepare("UPDATE members SET "
+                  "password = :password, "
+                  "salt = :salt "
                   "WHERE id = :id"
                 );
     query.bindValue(":password", newPassword);

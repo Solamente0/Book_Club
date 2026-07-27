@@ -81,7 +81,12 @@ public:
     void setPublisherUsername(const QString& username);
 
     void addReview(const Review& review);
+    bool editReview(int userId, int newStars, const QString &newComment);
+    bool removeReview(int userId);
     const QVector<Review>& getReviews() const;
+
+private:
+    void recalculateAverageRating();
 };
 
 #endif
