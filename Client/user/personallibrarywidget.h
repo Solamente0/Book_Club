@@ -8,6 +8,7 @@
 #include <QComboBox>
 #include "User.h"
 #include "Shelf.h"
+#include "Purchase.h"
 
 class PersonalLibraryWidget : public QWidget
 {
@@ -18,7 +19,6 @@ public:
 
 signals:
     void backToHomeRequested();
-    void userUpdated(const User &updatedUser);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -28,12 +28,16 @@ private slots:
     void onBackClicked();
 
 private:
+    void reloadLibraryData();
     void refreshMyBooks();
     void refreshSavedBooks();
     void refreshShelves();
     QComboBox* buildShelfComboBox(int excludeIndex = -1);
 
-    User *currentUser;
+    int currentUserId = 0;
+    QVector<Purchase> purchasedBooks;
+    QVector<Book> savedBooks;
+    QVector<Shelf> shelves;
 
     QPushButton *backButton;
 
