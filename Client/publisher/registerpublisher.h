@@ -10,7 +10,7 @@
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QPaintEvent>
-#include "PublisherManager.h"
+#include "publishermanager.h"
 #include "UserManager.h"
 
 class RegisterPublisher : public QWidget {

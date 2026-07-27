@@ -6,7 +6,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include "Publisher.h"
-#include "PublisherManager.h"
+#include "publishermanager.h"
 
 class PublisherDashboardWidget : public QWidget
 {

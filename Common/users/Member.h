@@ -1,7 +1,7 @@
 #ifndef MEMBER_H
 #define MEMBER_H
 
-#include <Qstring>
+#include <QString>
 #include <QDateTime>
 #include <QVector>
 
