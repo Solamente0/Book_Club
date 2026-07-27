@@ -268,8 +268,11 @@ void PublisherDashboardWidget::refreshBookList()
     for (const Book &book : books) {
         QFrame *row = new QFrame();
         row->setStyleSheet("background-color: rgba(255,255,255,210); border-radius: 10px;");
-        QHBoxLayout *rowLayout = new QHBoxLayout(row);
-        rowLayout->setContentsMargins(15, 10, 15, 10);
+        QVBoxLayout *rowOuterLayout = new QVBoxLayout(row);
+        rowOuterLayout->setContentsMargins(15, 10, 15, 10);
+        rowOuterLayout->setSpacing(6);
+
+        QHBoxLayout *rowLayout = new QHBoxLayout();
         rowLayout->setSpacing(10);
 
         QString statusText = book.getisActive() ? "🟢" : "🔴 (inactive)";
@@ -351,6 +354,21 @@ void PublisherDashboardWidget::refreshBookList()
             emit catalogChanged();
             loadPublisher(currentPublisher);
         });
+
+        rowOuterLayout->addLayout(rowLayout);
+
+        if (!book.getReviews().isEmpty()) {
+            QLabel *lblReviewsTitle = new QLabel("Reviews:", row);
+            lblReviewsTitle->setStyleSheet("color: #706357; font-size: 11px; background: transparent;");
+            rowOuterLayout->addWidget(lblReviewsTitle);
+
+            for (const Review &r : book.getReviews()) {
+                QLabel *lblReview = new QLabel(QString("  %1 ★ — %2 (%3)").arg(r.getStars()).arg(r.getComment(), r.getUsername()));
+                lblReview->setStyleSheet("color: #2C3E50; font-size: 11px; background: transparent;");
+                lblReview->setWordWrap(true);
+                rowOuterLayout->addWidget(lblReview);
+            }
+        }
 
         bookListLayout->addWidget(row);
     }

@@ -6,7 +6,9 @@
 #include <QPainter>
 #include <QPixmap>
 #include <QDesktopServices>
+#include <QDialog>
 #include <QDir>
+#include <QEvent>
 #include <QFile>
 #include <QStandardPaths>
 #include <QUrl>
@@ -82,6 +84,8 @@ BookDetailWidget::BookDetailWidget(Cart *cart, User *user, QWidget *parent)
         "border: 1px solid rgba(0, 0, 0, 20);"
         );
     coverLabel->setAlignment(Qt::AlignCenter);
+    coverLabel->setCursor(Qt::PointingHandCursor);
+    coverLabel->installEventFilter(this);
     infoLayout->addWidget(coverLabel);
 
     // متن‌های سمت راست کاور
@@ -280,18 +284,7 @@ void BookDetailWidget::loadBook(const Book &book)
     descriptionLabel->setText(currentBook.getDiscription().isEmpty() ? "No description available." : currentBook.getDiscription());
     ratingLabel->setText(QString("⭐ %1 / 5").arg(currentBook.getAverageRating(), 0, 'f', 1));
 
-    if (!currentBook.getImagePath().isEmpty()) {
-        QPixmap pix(currentBook.getImagePath());
-        if (!pix.isNull()) {
-            coverLabel->setPixmap(pix.scaled(coverLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-        } else {
-            coverLabel->setText("📖");
-            coverLabel->setFont(QFont("Segoe UI", 40));
-        }
-    } else {
-        coverLabel->setText("📖");
-        coverLabel->setFont(QFont("Segoe UI", 40));
-    }
+    loadCover();
 
     if (currentBook.getPrice() > currentBook.getFinalPrice()) {
         originalPriceLabel->setText(QString("$%1").arg(currentBook.getPrice(), 0, 'f', 2));
@@ -302,6 +295,28 @@ void BookDetailWidget::loadBook(const Book &book)
     priceLabel->setText(QString("$%1").arg(currentBook.getFinalPrice(), 0, 'f', 2));
 
     refreshReviews();
+}
+
+void BookDetailWidget::loadCover()
+{
+    currentCoverPixmap = QPixmap();
+
+    QJsonObject response = NetworkClient::instance().sendRequest(
+        RequestType::GetBookCover, QJsonObject{{"book_id", currentBook.getId()}});
+
+    if (response.value("status").toString() == "Success") {
+        QByteArray coverBytes = QByteArray::fromBase64(
+            response.value("data").toObject().value("cover_data").toString().toLatin1());
+        currentCoverPixmap.loadFromData(coverBytes);
+    }
+
+    if (!currentCoverPixmap.isNull()) {
+        coverLabel->setPixmap(currentCoverPixmap.scaled(coverLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    } else {
+        coverLabel->setPixmap(QPixmap());
+        coverLabel->setText("📖");
+        coverLabel->setFont(QFont("Segoe UI", 40));
+    }
 }
 
 void BookDetailWidget::refreshReviews()
@@ -468,4 +483,22 @@ void BookDetailWidget::paintEvent(QPaintEvent *event)
     opt.initFrom(this);
     QPainter painter(this);
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &painter, this);
+}
+
+bool BookDetailWidget::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == coverLabel && event->type() == QEvent::MouseButtonPress && !currentCoverPixmap.isNull()) {
+        QDialog dialog(this);
+        dialog.setWindowTitle(currentBook.getTitle());
+        QVBoxLayout *layout = new QVBoxLayout(&dialog);
+
+        QLabel *fullCover = new QLabel(&dialog);
+        fullCover->setPixmap(currentCoverPixmap.scaled(420, 580, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        layout->addWidget(fullCover);
+
+        dialog.exec();
+        return true;
+    }
+
+    return QWidget::eventFilter(watched, event);
 }
