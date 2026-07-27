@@ -113,6 +113,10 @@ QJsonObject BookHandler::handleAddBook(const QJsonObject &data, ClientHandler *c
     book.setImagePath(coverPath);
     BookRepository::instance().update(book);
 
+    Publisher *pub = dynamic_cast<Publisher*>(client->currentUser().get());
+    if (pub)
+        pub->addPublishedBook(book);
+
     return success(bookToJsonFull(book));
 }
 
