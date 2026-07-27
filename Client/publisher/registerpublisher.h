@@ -11,12 +11,11 @@
 #include <QHBoxLayout>
 #include <QPaintEvent>
 #include "publishermanager.h"
-#include "UserManager.h"
 
 class RegisterPublisher : public QWidget {
     Q_OBJECT
 public:
-    explicit RegisterPublisher(PublisherManager *publisherManager, UserManager *userManager, QWidget *parent = nullptr);
+    explicit RegisterPublisher(PublisherManager *publisherManager, QWidget *parent = nullptr);
     ~RegisterPublisher();
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -27,7 +26,6 @@ signals:
     void goToLogin();
 private:
     PublisherManager *publisherManager;
-    UserManager *userManager;
 
     QFrame *signupframe;
     QLabel *lblwelcome;
