@@ -15,7 +15,6 @@
 #include "profilewidget.h"
 #include "personallibrarywidget.h"
 #include "registerpublisher.h"
-#include "Admin.h"
 #include "adminloginwidget.h"
 #include "notificationwidget.h"
 #include "publisherdashboardwidget.h"
@@ -48,7 +47,6 @@ private:
     PublisherManager *publisherManager;
     PublisherDashboardWidget *PublisherDashboardPage;
     RegisterPublisher *RegisterPublisherPage;
-    Admin systemAdmin;
     AdminLoginWidget *AdminLoginPage;
     NotificationWidget *NotificationPage;
     AdminPanelWidget *AdminPanelPage;
