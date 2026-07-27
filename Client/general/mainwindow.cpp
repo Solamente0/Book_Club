@@ -15,13 +15,12 @@
 #include "personallibrarywidget.h"
 #include "publishermanager.h"
 #include "registerpublisher.h"
-#include "Admin.h"
 #include "adminloginwidget.h"
 #include "notificationwidget.h"
-#include <algorithm>
+#include "networkclient.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QWidget(parent), systemAdmin("admin", "admin123", "N/A")
+    : QWidget(parent)
 {
     resize(700,700);
     QRect screenGeometry = QGuiApplication::primaryScreen()->availableGeometry();
@@ -30,6 +29,11 @@ MainWindow::MainWindow(QWidget *parent)
         screenGeometry.center().y() - height() / 2
         );
 
+    if (!NetworkClient::instance().connectToServer()) {
+        QMessageBox::warning(this, "Connection Error",
+            "Could not connect to the BookClub server. Some features will be unavailable until the connection succeeds.");
+    }
+
     userManager = new UserManager();
 
     publisherManager = new PublisherManager();
@@ -37,17 +41,16 @@ MainWindow::MainWindow(QWidget *parent)
     stack = new QStackedWidget(this);
     mainCart = &mainCartData;
 
-    RegisterPage = new Register(userManager, publisherManager, this);
-    RegisterPublisherPage = new RegisterPublisher(publisherManager, userManager, this);
+    RegisterPage = new Register(userManager, this);
+    RegisterPublisherPage = new RegisterPublisher(publisherManager, this);
     PublisherDashboardPage = new PublisherDashboardWidget(publisherManager, this);
 
     AdminLoginPage = new AdminLoginWidget(this);
-    AdminLoginPage->setAdminCredentials(systemAdmin.getUsername(), systemAdmin.getPassword());
     AdminPanelPage = new AdminPanelWidget(userManager, publisherManager, this);
 
 
 
-    LoginPage = new login(userManager,publisherManager, this);
+    LoginPage = new login(this);
     HomePage = new home(this);
 
     CartPage = new CartWidget(mainCart, this);
@@ -97,9 +100,14 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     connect(GenreSelectionPage, &GenreSelectionWidget::genresSelected, this, [this](QVector<genre> genres) {
+        QString errorMessage;
+        if (!userManager->updateFavoriteGenres(genres, errorMessage)) {
+            QMessageBox::warning(this, "Error", errorMessage.isEmpty() ? "Could not save your genres." : errorMessage);
+            return;
+        }
+
         currentUser.setFavoriteGenres(genres);
         currentUser.setFirstLogin(false);
-        userManager->updateUser(currentUser);
 
         loadHomePageContent();
 
@@ -107,7 +115,7 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(HomePage, &home::cartRequested, this, [this]() {
-        CartPage->updateUI();
+        CartPage->refreshFromServer();
         stack->setCurrentWidget(CartPage);
     });
 
@@ -115,14 +123,7 @@ MainWindow::MainWindow(QWidget *parent)
         stack->setCurrentWidget(HomePage);
     });
 
-    connect(CartPage, &CartWidget::checkoutSuccessful, this, [this](const QVector<Book> &purchasedBooks) {
-        for (const Book &book : purchasedBooks) {
-            if (!currentUser.hasPurchasedBook(book.getId())) {
-                currentUser.addPurchasedBook(Purchase(book, book.getFinalPrice(), QDateTime::currentDateTime()));
-            }
-        }
-        userManager->updateUser(currentUser);
-
+    connect(CartPage, &CartWidget::checkoutSuccessful, this, [this]() {
         QMessageBox::information(this, "Success", "Thank you for your purchase! Books added to your library.");
         stack->setCurrentWidget(HomePage);
     });
@@ -164,7 +165,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ProfilePage, &ProfileWidget::userUpdated, this, [this](User updatedUser) {
         currentUser = updatedUser;
-        userManager->updateUser(currentUser);
     });
     connect(HomePage, &home::libraryRequested, this, [this]() {
         LibraryPage->loadUser(currentUser);
@@ -172,14 +172,10 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(HomePage, &home::searchRequested, this, [this](const QString &query) {
-        QVector<Book> results;
-        for (const Book &book : allBooks) {
-            if (book.getTitle().contains(query, Qt::CaseInsensitive) ||
-                book.getAuthor().contains(query, Qt::CaseInsensitive) ||
-                book.getPublisherUsername().contains(query, Qt::CaseInsensitive)) {
-                results.append(book);
-            }
-        }
+        QString errorMessage;
+        QVector<Book> results = publisherManager->searchBooks(query, errorMessage);
+        if (!errorMessage.isEmpty())
+            QMessageBox::warning(this, "Search Error", errorMessage);
         HomePage->showSearchResults(results, query);
     });
 
@@ -187,10 +183,6 @@ MainWindow::MainWindow(QWidget *parent)
         stack->setCurrentWidget(HomePage);
     });
 
-    connect(LibraryPage, &PersonalLibraryWidget::userUpdated, this, [this](User updatedUser) {
-        currentUser = updatedUser;
-        userManager->updateUser(currentUser);
-    });
     connect(LoginPage, &login::GoToSignUpPublisher, this, [this]() {
         stack->setCurrentWidget(RegisterPublisherPage);
     });
@@ -218,17 +210,12 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(HomePage, &home::notificationsRequested, this, [this]() {
-        NotificationPage->loadUser(currentUser);
+        NotificationPage->refreshFromServer();
         stack->setCurrentWidget(NotificationPage);
     });
 
     connect(NotificationPage, &NotificationWidget::backToHomeRequested, this, [this]() {
         stack->setCurrentWidget(HomePage);
-    });
-
-    connect(NotificationPage, &NotificationWidget::userUpdated, this, [this](User updatedUser) {
-        currentUser = updatedUser;
-        userManager->updateUser(currentUser);
     });
 
     connect(LoginPage, &login::PublisherSignInSuccess, this, [this](Publisher publisher) {
@@ -237,95 +224,41 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(PublisherDashboardPage, &PublisherDashboardWidget::backToLoginRequested, this, [this]() {
+        NetworkClient::instance().sendRequest(RequestType::Logout);
         stack->setCurrentWidget(LoginPage);
     });
 
-    connect(PublisherDashboardPage, &PublisherDashboardWidget::publisherUpdated, this, [this](Publisher updated) {
-        publisherManager->updatePublisher(updated);
-    });
-
     connect(PublisherDashboardPage, &PublisherDashboardWidget::catalogChanged, this, [this]() {
-        // به‌روزرسانی allBooks از همه ناشران — فعلاً ساده: فقط دوباره صفحه اصلی رو لود کن اگه باز باشه
-        loadHomePageContent();
-    });
-
-    connect(PublisherDashboardPage, &PublisherDashboardWidget::bookPublished, this, [this](Book newBook) {
-        QVector<User> allUsers = userManager->getAllUsers();
-        for (User u : allUsers) {
-            if (u.getfavoriteGenres().contains(newBook.getGenre())) {
-                Notification n(QString("📚 New book in your favorite genre: %1").arg(newBook.getTitle()));
-                u.addNotification(n);
-                userManager->updateUser(u);
-
-                if (u.getId() == currentUser.getId()) {
-                    currentUser = u;
-                }
-            }
-        }
+        if (stack->currentWidget() == HomePage)
+            loadHomePageContent();
     });
 
     connect(ProfilePage, &ProfileWidget::logoutRequested, this, [this]() {
+        NetworkClient::instance().sendRequest(RequestType::Logout);
         currentUser = User();
         stack->setCurrentWidget(LoginPage);
     });
 
     connect(AdminPanelPage, &AdminPanelWidget::logoutRequested, this, [this]() {
+        NetworkClient::instance().sendRequest(RequestType::Logout);
         stack->setCurrentWidget(LoginPage);
     });
 
     connect(AdminPanelPage, &AdminPanelWidget::catalogChanged, this, [this]() {
-        loadHomePageContent();
+        if (stack->currentWidget() == HomePage)
+            loadHomePageContent();
     });
 }
 void MainWindow::loadHomePageContent()
 {
-    allBooks = publisherManager->getAllActiveBooks();
+    QString errorMessage;
 
-    if (allBooks.isEmpty()) {
-        allBooks.append(Book("Fantasy Best", "Author A", genre::Fiction, 15.0));
-        allBooks.append(Book("Mystery Case", "Author B", genre::Mystery, 12.0));
-        allBooks.append(Book("World History", "Author C", genre::History, 20.0));
-        allBooks.append(Book("Love Story", "Author D", genre::Romance, 10.0));
-    }
-
-    // ۱. Recommended: کتاب‌های ژانر مورد علاقه، مرتب بر اساس محبوبیت
-    QVector<Book> recommended;
-    for (const Book &book : allBooks) {
-        if (currentUser.getfavoriteGenres().contains(book.getGenre())) {
-            recommended.append(book);
-        }
-    }
-    std::sort(recommended.begin(), recommended.end(), [](const Book &a, const Book &b) {
-        if (a.getAverageRating() != b.getAverageRating())
-            return a.getAverageRating() > b.getAverageRating();
-        return a.getSalesCount() > b.getSalesCount();
-    });
-
-    // ۲. Featured: بالاترین امتیاز کل فروشگاه
-    QVector<Book> featured = allBooks;
-    std::sort(featured.begin(), featured.end(), [](const Book &a, const Book &b) {
-        return a.getAverageRating() > b.getAverageRating();
-    });
-
-    // ۳. New Releases: جدیدترین‌ها
-    QVector<Book> newReleases = allBooks;
-    std::sort(newReleases.begin(), newReleases.end(), [](const Book &a, const Book &b) {
-        return a.getPublishDate() > b.getPublishDate();
-    });
-
-    // ۴. Best Sellers: بیشترین فروش
-    QVector<Book> bestSellers = allBooks;
-    std::sort(bestSellers.begin(), bestSellers.end(), [](const Book &a, const Book &b) {
-        return a.getSalesCount() > b.getSalesCount();
-    });
-
-    // ۵. Free Books: قیمت نهایی صفر
-    QVector<Book> freeBooks;
-    for (const Book &book : allBooks) {
-        if (book.getFinalPrice() <= 0.0) {
-            freeBooks.append(book);
-        }
-    }
+    allBooks = publisherManager->getAllActiveBooks(errorMessage);
+    QVector<Book> recommended = publisherManager->getRecommendedBooks(errorMessage);
+    QVector<Book> newReleases = publisherManager->getNewestBooks(errorMessage);
+    QVector<Book> featured = publisherManager->getMostRatedBooks(errorMessage);
+    QVector<Book> freeBooks = publisherManager->getFreeBooks(errorMessage);
+    QVector<Book> bestSellers = publisherManager->getTopSellingBooks(errorMessage);
 
     HomePage->loadRecommendedBooks(recommended);
     HomePage->loadGenreBooks(allBooks);

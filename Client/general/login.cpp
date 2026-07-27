@@ -3,9 +3,11 @@
 #include <QPainter>
 #include <QMessageBox>
 #include "home.h"
+#include "networkclient.h"
+#include "modelserializer.h"
 
-login::login(UserManager *userManager, PublisherManager *publisherManager, QWidget *parent)
-    : QWidget(parent), userManager(userManager), publisherManager(publisherManager)
+login::login(QWidget *parent)
+    : QWidget(parent)
 {
     this->setObjectName("loginPage");
     this->setStyleSheet(
@@ -187,27 +189,26 @@ void login::onSignInClicked()
         return;
     }
 
-    User foundUser;
-    if (userManager->authenticate(username, password, foundUser)) {
-        if (foundUser.isBlocked()) {
-            QMessageBox::warning(this, "Login", "Your account has been blocked. Please contact support.");
-            return;
-        }
-        emit SignInSuccess(foundUser);
+    QJsonObject data;
+    data["username"] = username;
+    data["password"] = password;
+
+    QJsonObject response = NetworkClient::instance().sendRequest(RequestType::Login, data);
+    if (response.value("status").toString() != "Success") {
+        QMessageBox::warning(this, "Login", response.value("message").toString("Incorrect username or password."));
         return;
     }
 
-    Publisher foundPublisher;
-    if (publisherManager->authenticate(username, password, foundPublisher)) {
-        if (foundPublisher.isBlocked()) {
-            QMessageBox::warning(this, "Login", "Your account has been blocked. Please contact support.");
-            return;
-        }
-        emit PublisherSignInSuccess(foundPublisher);
-        return;
-    }
+    QJsonObject memberData = response.value("data").toObject();
+    QString role = memberData.value("role").toString();
 
-    QMessageBox::warning(this, "Login", "Incorrect username or password.");
+    if (role == "Publisher") {
+        emit PublisherSignInSuccess(ModelSerializer::publisherFromJson(memberData));
+    } else if (role == "User") {
+        emit SignInSuccess(ModelSerializer::userFromJson(memberData));
+    } else {
+        QMessageBox::warning(this, "Login", "This account cannot sign in here. Use \"Enter as Admin\" for admin accounts.");
+    }
 }
 
 login::~login() {

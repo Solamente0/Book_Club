@@ -26,6 +26,7 @@ protected:
 
 private slots:
     void onAddToCartClicked();
+    void onReadClicked();
     void onBackClicked();
     void onSubmitReviewClicked();
 
@@ -50,6 +51,7 @@ private:
     QLabel *originalPriceLabel;
     QLabel *ratingLabel;
     QPushButton *addToCartButton;
+    QPushButton *readButton;
     QPushButton *backButton;
 
     QVBoxLayout *reviewsListLayout;

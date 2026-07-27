@@ -239,6 +239,10 @@ void PublisherDashboardWidget::loadPublisher(const Publisher &publisher)
     currentPublisher = publisher;
     leUsername->setText(currentPublisher.getUsername());
 
+    QString errorMessage;
+    publishedBooks = publisherManager->getBooksByPublisher(errorMessage);
+    if (!errorMessage.isEmpty())
+        QMessageBox::warning(this, "Error", errorMessage);
 
     refreshBookList();
     refreshStats();
@@ -252,7 +256,7 @@ void PublisherDashboardWidget::refreshBookList()
         delete child;
     }
 
-    QVector<Book> books = currentPublisher.getPublishedBooks();
+    QVector<Book> books = publishedBooks;
 
     if (books.isEmpty()) {
         QLabel *lblNone = new QLabel("You haven't published any books yet.");
@@ -300,27 +304,24 @@ void PublisherDashboardWidget::refreshBookList()
             );
         rowLayout->addWidget(btnToggleActive);
 
-        QPushButton *btnDeletePermanently = new QPushButton("Delete", row);
-        btnDeletePermanently->setCursor(Qt::PointingHandCursor);
-        btnDeletePermanently->setStyleSheet(
-            "QPushButton { background-color: #FF69B4; color: white; border: none; border-radius: 6px; padding: 4px 10px; }"
-            "QPushButton:hover { background-color: #FFC0CB; color: #2C3E50; }"
-            );
-        rowLayout->addWidget(btnDeletePermanently);
-
         int bookId = book.getId();
+        bool currentlyActive = book.getisActive();
 
         connect(btnEdit, &QPushButton::clicked, this, [this, book]() {
             AddEditBookDialog dialog(this);
             dialog.loadForEdit(book);
-            if (dialog.exec() == QDialog::Accepted) {
-                Book updated = dialog.getResultBook();
-                currentPublisher.updatePublishedBook(updated);
-                emit publisherUpdated(currentPublisher);
-                emit catalogChanged();
-                refreshBookList();
-                refreshStats();
+            if (dialog.exec() != QDialog::Accepted)
+                return;
+
+            Book updated = dialog.getResultBook();
+            QString errorMessage;
+            if (!publisherManager->editBook(updated, dialog.getCoverFilePath(), dialog.getPdfFilePath(), errorMessage)) {
+                QMessageBox::warning(this, "Error", errorMessage.isEmpty() ? "Could not update the book." : errorMessage);
+                return;
             }
+
+            emit catalogChanged();
+            loadPublisher(currentPublisher);
         });
 
         connect(btnDiscount, &QPushButton::clicked, this, [this, bookId]() {
@@ -330,44 +331,25 @@ void PublisherDashboardWidget::refreshBookList()
                                                          0.0, 0.0, 100.0, 1, &ok);
             if (!ok) return;
 
-            QVector<Book> books = currentPublisher.getPublishedBooks();
-            for (Book &b : books) {
-                if (b.getId() == bookId) {
-                    b.setDiscount(newDiscount);
-                    currentPublisher.updatePublishedBook(b);
-                    break;
-                }
+            QString errorMessage;
+            if (!publisherManager->applyDiscount(bookId, newDiscount, errorMessage)) {
+                QMessageBox::warning(this, "Error", errorMessage.isEmpty() ? "Could not apply the discount." : errorMessage);
+                return;
             }
-            emit publisherUpdated(currentPublisher);
+
             emit catalogChanged();
-            refreshBookList();
+            loadPublisher(currentPublisher);
         });
 
-        connect(btnDeletePermanently, &QPushButton::clicked, this, [this, bookId]() {
-            QMessageBox::StandardButton reply = QMessageBox::question(
-                this, "Confirm Delete",
-                "This will permanently delete the book. This cannot be undone. Continue?");
-            if (reply == QMessageBox::Yes) {
-                currentPublisher.removePublishedBook(bookId);
-                emit publisherUpdated(currentPublisher);
-                emit catalogChanged();
-                refreshBookList();
-                refreshStats();
+        connect(btnToggleActive, &QPushButton::clicked, this, [this, bookId, currentlyActive]() {
+            QString errorMessage;
+            if (!publisherManager->setBookActive(bookId, !currentlyActive, errorMessage)) {
+                QMessageBox::warning(this, "Error", errorMessage.isEmpty() ? "Could not update the book's status." : errorMessage);
+                return;
             }
-        });
 
-        connect(btnToggleActive, &QPushButton::clicked, this, [this, bookId]() {
-            QVector<Book> books = currentPublisher.getPublishedBooks();
-            for (Book &b : books) {
-                if (b.getId() == bookId) {
-                    b.setisActive(!b.getisActive());
-                    currentPublisher.updatePublishedBook(b);
-                    break;
-                }
-            }
-            emit publisherUpdated(currentPublisher);
             emit catalogChanged();
-            refreshBookList();
+            loadPublisher(currentPublisher);
         });
 
         bookListLayout->addWidget(row);
@@ -376,7 +358,7 @@ void PublisherDashboardWidget::refreshBookList()
 
 void PublisherDashboardWidget::refreshStats()
 {
-    QVector<Book> books = currentPublisher.getPublishedBooks();
+    QVector<Book> books = publishedBooks;
 
     lblTotalBooks->setText(QString("Total published books: %1").arg(books.size()));
 
@@ -438,26 +420,20 @@ void PublisherDashboardWidget::onSaveInfoClicked()
         return;
     }
 
-    if (publisherManager->isUsernameTakenByAnother(newUsername, currentPublisher.getId())) {
-        QMessageBox::warning(this, "Error", "This username is already taken.");
+    QString errorMessage;
+    if (!publisherManager->changeUsername(newUsername, errorMessage)) {
+        QMessageBox::warning(this, "Error", errorMessage.isEmpty() ? "This username is already taken." : errorMessage);
         return;
     }
 
     currentPublisher.setUsername(newUsername);
 
-
     QMessageBox::information(this, "Saved", "Your information has been updated.");
-    emit publisherUpdated(currentPublisher);
 }
 void PublisherDashboardWidget::onChangePasswordClicked()
 {
     if (leCurrentPassword->text().isEmpty()) {
         QMessageBox::warning(this, "Error", "Please enter your current password.");
-        return;
-    }
-
-    if (leCurrentPassword->text() != currentPublisher.getPassword()) {
-        QMessageBox::warning(this, "Error", "Current password is incorrect.");
         return;
     }
 
@@ -476,28 +452,35 @@ void PublisherDashboardWidget::onChangePasswordClicked()
         return;
     }
 
-    currentPublisher.setPassword(leNewPassword->text());
+    QString errorMessage;
+    bool success = publisherManager->changePassword(leCurrentPassword->text(), leNewPassword->text(), errorMessage);
+
     leCurrentPassword->clear();
     leNewPassword->clear();
     leConfirmPassword->clear();
 
+    if (!success) {
+        QMessageBox::warning(this, "Error", errorMessage.isEmpty() ? "Could not update the password." : errorMessage);
+        return;
+    }
+
     QMessageBox::information(this, "Saved", "Your password has been updated.");
-    emit publisherUpdated(currentPublisher);
 }
 void PublisherDashboardWidget::onAddBookClicked()
 {
     AddEditBookDialog dialog(this);
-    if (dialog.exec() == QDialog::Accepted) {
-        Book newBook = dialog.getResultBook();
-        newBook.setPublisherUsername(currentPublisher.getUsername());
-        currentPublisher.addPublishedBook(newBook);
+    if (dialog.exec() != QDialog::Accepted)
+        return;
 
-        emit publisherUpdated(currentPublisher);
-        emit catalogChanged();
-        emit bookPublished(newBook);
-        refreshBookList();
-        refreshStats();
+    Book newBook = dialog.getResultBook();
+    QString errorMessage;
+    if (!publisherManager->addBook(newBook, dialog.getCoverFilePath(), dialog.getPdfFilePath(), errorMessage)) {
+        QMessageBox::warning(this, "Error", errorMessage.isEmpty() ? "Could not add the book." : errorMessage);
+        return;
     }
+
+    emit catalogChanged();
+    loadPublisher(currentPublisher);
 }
 
 void PublisherDashboardWidget::onLogoutClicked()

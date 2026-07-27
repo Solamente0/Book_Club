@@ -5,6 +5,13 @@
 #include <QStyleOption>
 #include <QPainter>
 #include <QPixmap>
+#include <QDesktopServices>
+#include <QDir>
+#include <QFile>
+#include <QStandardPaths>
+#include <QUrl>
+#include "networkclient.h"
+#include "modelserializer.h"
 
 BookDetailWidget::BookDetailWidget(Cart *cart, User *user, QWidget *parent)
     : QWidget(parent), mainCart(cart), currentUserPtr(user)
@@ -135,6 +142,21 @@ BookDetailWidget::BookDetailWidget(Cart *cart, User *user, QWidget *parent)
         );
     textColumn->addWidget(addToCartButton);
 
+    readButton = new QPushButton("📖 Read Book", infoCard);
+    readButton->setCursor(Qt::PointingHandCursor);
+    readButton->setMinimumHeight(42);
+    readButton->setStyleSheet(
+        "QPushButton {"
+        "   background-color: #2C3E50;"
+        "   color: white;"
+        "   border: none;"
+        "   border-radius: 8px;"
+        "   font-weight: bold;"
+        "}"
+        "QPushButton:hover { background-color: #FFC0CB; color: #2C3E50; }"
+        );
+    textColumn->addWidget(readButton);
+
     infoLayout->addLayout(textColumn, 1);
     mainLayout->addWidget(infoCard);
 
@@ -200,12 +222,14 @@ BookDetailWidget::BookDetailWidget(Cart *cart, User *user, QWidget *parent)
     textColumn->addWidget(saveButton);
 
     connect(saveButton, &QPushButton::clicked, this, [this]() {
-        if (!currentUserPtr) return;
-        if (currentUserPtr->hasSavedBook(currentBook.getId())) {
-            QMessageBox::information(this, "Already Saved", "This book is already in your saved list.");
+        QJsonObject data;
+        data["book_id"] = currentBook.getId();
+
+        QJsonObject response = NetworkClient::instance().sendRequest(RequestType::SaveBook, data);
+        if (response.value("status").toString() != "Success") {
+            QMessageBox::warning(this, "Error", response.value("message").toString("Could not save the book."));
             return;
         }
-        currentUserPtr->addSavedBook(currentBook);
         QMessageBox::information(this, "Saved", "Book saved for later!");
     });
 
@@ -217,6 +241,7 @@ BookDetailWidget::BookDetailWidget(Cart *cart, User *user, QWidget *parent)
 
     connect(backButton, &QPushButton::clicked, this, &BookDetailWidget::onBackClicked);
     connect(addToCartButton, &QPushButton::clicked, this, &BookDetailWidget::onAddToCartClicked);
+    connect(readButton, &QPushButton::clicked, this, &BookDetailWidget::onReadClicked);
     connect(submitReviewButton, &QPushButton::clicked, this, &BookDetailWidget::onSubmitReviewClicked);
 }
 
@@ -241,6 +266,13 @@ void BookDetailWidget::loadBook(const Book &book)
 {
     currentBook = book;
     resetReviewForm();
+
+    // GetAllBooks/search results are lightweight (no reviews); fetch the
+    // full record so reviews and the average rating are up to date.
+    QJsonObject response = NetworkClient::instance().sendRequest(
+        RequestType::GetBookDetails, QJsonObject{{"book_id", book.getId()}});
+    if (response.value("status").toString() == "Success")
+        currentBook = ModelSerializer::bookFromJson(response.value("data").toObject());
 
     titleLabel->setText(currentBook.getTitle());
     authorLabel->setText("by " + currentBook.getAuthor());
@@ -327,14 +359,20 @@ void BookDetailWidget::refreshReviews()
             });
 
             connect(btnDelete, &QPushButton::clicked, this, [this, reviewUserId]() {
+                Q_UNUSED(reviewUserId);
                 if (QMessageBox::question(this, "Delete Review", "Are you sure you want to delete your review?")
                     != QMessageBox::Yes)
                     return;
 
-                currentBook.removeReview(reviewUserId);
-                resetReviewForm();
-                refreshReviews();
-                ratingLabel->setText(QString("⭐ %1 / 5 (%2 reviews)").arg(currentBook.getAverageRating(), 0, 'f', 1).arg(currentBook.getReviews().size()));
+                QJsonObject data;
+                data["book_id"] = currentBook.getId();
+                QJsonObject response = NetworkClient::instance().sendRequest(RequestType::DeleteReview, data);
+                if (response.value("status").toString() != "Success") {
+                    QMessageBox::warning(this, "Error", response.value("message").toString("Could not delete the review."));
+                    return;
+                }
+
+                loadBook(currentBook);
             });
         }
 
@@ -352,12 +390,46 @@ void BookDetailWidget::resetReviewForm()
 
 void BookDetailWidget::onAddToCartClicked()
 {
-    bool success = mainCart->AddItem(currentBook);
-    if (!success) {
-        QMessageBox::warning(this, "Already in cart", "This book is already in your cart.");
-    } else {
-        QMessageBox::information(this, "Added", "Book added to your cart.");
+    QJsonObject data;
+    data["book_id"] = currentBook.getId();
+
+    QJsonObject response = NetworkClient::instance().sendRequest(RequestType::AddToCart, data);
+    if (response.value("status").toString() != "Success") {
+        QMessageBox::warning(this, "Could Not Add to Cart",
+            response.value("message").toString("This book could not be added to your cart."));
+        return;
     }
+
+    QMessageBox::information(this, "Added", "Book added to your cart.");
+}
+
+void BookDetailWidget::onReadClicked()
+{
+    QJsonObject data;
+    data["book_id"] = currentBook.getId();
+
+    QJsonObject response = NetworkClient::instance().sendRequest(RequestType::GetBookFile, data);
+    if (response.value("status").toString() != "Success") {
+        QMessageBox::warning(this, "Cannot Open Book",
+            response.value("message").toString("You must purchase this book first."));
+        return;
+    }
+
+    QByteArray pdfBytes = QByteArray::fromBase64(
+        response.value("data").toObject().value("pdf_data").toString().toLatin1());
+
+    QString dir = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/bookclub";
+    QDir().mkpath(dir);
+
+    QString filePath = QString("%1/book_%2.pdf").arg(dir).arg(currentBook.getId());
+    QFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly) || file.write(pdfBytes) < 0) {
+        QMessageBox::warning(this, "Error", "Could not save the book file for reading.");
+        return;
+    }
+    file.close();
+
+    QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
 }
 
 void BookDetailWidget::onSubmitReviewClicked()
@@ -369,19 +441,20 @@ void BookDetailWidget::onSubmitReviewClicked()
 
     if (!currentUserPtr) return;
 
-    int stars = starSelector->currentIndex() + 1;
-    QString comment = reviewTextEdit->toPlainText().trimmed();
+    QJsonObject data;
+    data["book_id"] = currentBook.getId();
+    data["stars"] = starSelector->currentIndex() + 1;
+    data["comment"] = reviewTextEdit->toPlainText().trimmed();
 
-    if (editingReview) {
-        currentBook.editReview(currentUserPtr->getId(), stars, comment);
-    } else {
-        Review newReview(currentUserPtr->getId(), stars, comment);
-        currentBook.addReview(newReview);
+    QJsonObject response = NetworkClient::instance().sendRequest(
+        editingReview ? RequestType::EditReview : RequestType::AddReview, data);
+
+    if (response.value("status").toString() != "Success") {
+        QMessageBox::warning(this, "Error", response.value("message").toString("Could not submit the review."));
+        return;
     }
 
-    resetReviewForm();
-    refreshReviews();
-    ratingLabel->setText(QString("⭐ %1 / 5 (%2 reviews)").arg(currentBook.getAverageRating(), 0, 'f', 1).arg(currentBook.getReviews().size()));
+    loadBook(currentBook);
 }
 
 void BookDetailWidget::onBackClicked()

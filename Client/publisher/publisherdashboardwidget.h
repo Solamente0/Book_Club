@@ -17,9 +17,7 @@ public:
 
 signals:
     void backToLoginRequested();
-    void publisherUpdated(const Publisher &updatedPublisher);
     void catalogChanged();
-    void bookPublished(const Book &newBook);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -37,6 +35,7 @@ private:
 
     PublisherManager *publisherManager;
     Publisher currentPublisher;
+    QVector<Book> publishedBooks;
 
     QPushButton *logoutButton;
 
