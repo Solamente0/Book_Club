@@ -7,11 +7,6 @@
 #include <QPainter>
 #include <QInputDialog>
 #include <QJsonArray>
-#include <QDesktopServices>
-#include <QDir>
-#include <QFile>
-#include <QStandardPaths>
-#include <QUrl>
 #include "networkclient.h"
 #include "modelserializer.h"
 
@@ -224,33 +219,8 @@ void PersonalLibraryWidget::refreshMyBooks()
             );
         rowLayout->addWidget(btnRead);
 
-        int readBookId = book.getId();
-        connect(btnRead, &QPushButton::clicked, this, [this, readBookId]() {
-            QJsonObject data;
-            data["book_id"] = readBookId;
-
-            QJsonObject response = NetworkClient::instance().sendRequest(RequestType::GetBookFile, data);
-            if (response.value("status").toString() != "Success") {
-                QMessageBox::warning(this, "Cannot Open Book",
-                    response.value("message").toString("You must purchase this book first."));
-                return;
-            }
-
-            QByteArray pdfBytes = QByteArray::fromBase64(
-                response.value("data").toObject().value("pdf_data").toString().toLatin1());
-
-            QString dir = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/bookclub";
-            QDir().mkpath(dir);
-
-            QString filePath = QString("%1/book_%2.pdf").arg(dir).arg(readBookId);
-            QFile file(filePath);
-            if (!file.open(QIODevice::WriteOnly) || file.write(pdfBytes) < 0) {
-                QMessageBox::warning(this, "Error", "Could not save the book file for reading.");
-                return;
-            }
-            file.close();
-
-            QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
+        connect(btnRead, &QPushButton::clicked, this, [this, book]() {
+            emit readBookRequested(book);
         });
 
         QComboBox *shelfCombo = buildShelfComboBox();

@@ -21,6 +21,7 @@ public:
 
 signals:
     void backToHomeRequested();
+    void readBookRequested(const Book &book);
 
 protected:
     void paintEvent(QPaintEvent *event) override;

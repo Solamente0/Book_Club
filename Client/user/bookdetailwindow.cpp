@@ -5,13 +5,8 @@
 #include <QStyleOption>
 #include <QPainter>
 #include <QPixmap>
-#include <QDesktopServices>
 #include <QDialog>
-#include <QDir>
 #include <QEvent>
-#include <QFile>
-#include <QStandardPaths>
-#include <QUrl>
 #include "networkclient.h"
 #include "modelserializer.h"
 
@@ -420,31 +415,7 @@ void BookDetailWidget::onAddToCartClicked()
 
 void BookDetailWidget::onReadClicked()
 {
-    QJsonObject data;
-    data["book_id"] = currentBook.getId();
-
-    QJsonObject response = NetworkClient::instance().sendRequest(RequestType::GetBookFile, data);
-    if (response.value("status").toString() != "Success") {
-        QMessageBox::warning(this, "Cannot Open Book",
-            response.value("message").toString("You must purchase this book first."));
-        return;
-    }
-
-    QByteArray pdfBytes = QByteArray::fromBase64(
-        response.value("data").toObject().value("pdf_data").toString().toLatin1());
-
-    QString dir = QStandardPaths::writableLocation(QStandardPaths::TempLocation) + "/bookclub";
-    QDir().mkpath(dir);
-
-    QString filePath = QString("%1/book_%2.pdf").arg(dir).arg(currentBook.getId());
-    QFile file(filePath);
-    if (!file.open(QIODevice::WriteOnly) || file.write(pdfBytes) < 0) {
-        QMessageBox::warning(this, "Error", "Could not save the book file for reading.");
-        return;
-    }
-    file.close();
-
-    QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
+    emit readBookRequested(currentBook);
 }
 
 void BookDetailWidget::onSubmitReviewClicked()
