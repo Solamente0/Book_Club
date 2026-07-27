@@ -211,6 +211,18 @@ void PersonalLibraryWidget::refreshMyBooks()
         lblBook->setStyleSheet("color: #2C3E50; background: transparent;");
         rowLayout->addWidget(lblBook, 1);
 
+        QPushButton *btnRead = new QPushButton("Read", row);
+        btnRead->setCursor(Qt::PointingHandCursor);
+        btnRead->setStyleSheet(
+            "QPushButton { background-color: #2C3E50; color: white; border: none; border-radius: 6px; padding: 4px 10px; }"
+            "QPushButton:hover { background-color: #FFC0CB; color: #2C3E50; }"
+            );
+        rowLayout->addWidget(btnRead);
+
+        connect(btnRead, &QPushButton::clicked, this, [this, book]() {
+            emit readBookRequested(book);
+        });
+
         QComboBox *shelfCombo = buildShelfComboBox();
         shelfCombo->setStyleSheet("background-color: white; border-radius: 6px; padding: 4px; color: #2C3E50;");
         rowLayout->addWidget(shelfCombo);

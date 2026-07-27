@@ -7,6 +7,7 @@
 #include <QScrollArea>
 #include <QComboBox>
 #include <QTextEdit>
+#include <QPixmap>
 #include "Book.h"
 #include "Cart.h"
 #include "User.h"
@@ -20,9 +21,11 @@ public:
 
 signals:
     void backToHomeRequested();
+    void readBookRequested(const Book &book);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 private slots:
     void onAddToCartClicked();
@@ -34,6 +37,7 @@ private:
     QString genreToString(genre g) const;
     void refreshReviews();
     void resetReviewForm();
+    void loadCover();
 
     User *currentUserPtr;
     bool editingReview = false;
@@ -41,6 +45,7 @@ private:
 
     Cart *mainCart;
     Book currentBook;
+    QPixmap currentCoverPixmap;
 
     QLabel *coverLabel;
     QLabel *titleLabel;

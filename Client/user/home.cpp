@@ -2,6 +2,10 @@
 #include <QStyleOption>
 #include <QPainter>
 #include <QPixmap>
+#include <QIcon>
+#include <QJsonObject>
+#include <QSize>
+#include "networkclient.h"
 
 home::home(QWidget *parent) : QWidget(parent) {
     this->setObjectName("homePage");
@@ -301,6 +305,20 @@ QWidget *home::createBookWidget(const Book &book, QWidget *parent)
         "   background-color: rgba(255, 255, 255, 180);"
         "}"
         );
+
+    QJsonObject coverResponse = NetworkClient::instance().sendRequest(
+        RequestType::GetBookCover, QJsonObject{{"book_id", book.getId()}});
+    if (coverResponse.value("status").toString() == "Success") {
+        QByteArray coverBytes = QByteArray::fromBase64(
+            coverResponse.value("data").toObject().value("cover_data").toString().toLatin1());
+        QPixmap pix;
+        if (pix.loadFromData(coverBytes)) {
+            card->setIcon(QIcon(pix));
+            card->setIconSize(QSize(90, 120));
+            card->setText(QString());
+            card->setToolTip(book.getTitle());
+        }
+    }
 
     connect(card, &QPushButton::clicked, this, [this, book]() {
         emit bookClicked(book);

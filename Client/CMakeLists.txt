@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19)
 project(Client LANGUAGES CXX)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Network)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Network Pdf PdfWidgets)
 
 qt_standard_project_setup()
 
@@ -70,6 +70,8 @@ qt_add_executable(Client
     user/profilewidget.cpp
     user/personallibrarywidget.h
     user/personallibrarywidget.cpp
+    user/pdfreaderwidget.h
+    user/pdfreaderwidget.cpp
     publisher/publishermanager.h
     publisher/publishermanager.cpp
     publisher/registerpublisher.h
@@ -99,6 +101,8 @@ target_link_libraries(Client
         Qt::Core
         Qt::Widgets
         Qt::Network
+        Qt::Pdf
+        Qt::PdfWidgets
 )
 target_include_directories(Client PRIVATE
     ..

@@ -145,6 +145,9 @@ MainWindow::MainWindow(QWidget *parent)
     BookDetailPage = new BookDetailWidget(mainCart, &currentUser, this);
     stack->addWidget(BookDetailPage);
 
+    PdfReaderPage = new PdfReaderWidget(this);
+    stack->addWidget(PdfReaderPage);
+
     connect(HomePage, &home::bookClicked, this, [this](const Book &book) {
         BookDetailPage->loadBook(book);
         stack->setCurrentWidget(BookDetailPage);
@@ -152,6 +155,16 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(BookDetailPage, &BookDetailWidget::backToHomeRequested, this, [this]() {
         stack->setCurrentWidget(HomePage);
+    });
+
+    connect(BookDetailPage, &BookDetailWidget::readBookRequested, this, [this](const Book &book) {
+        pdfReturnPage = BookDetailPage;
+        PdfReaderPage->openBook(book);
+        stack->setCurrentWidget(PdfReaderPage);
+    });
+
+    connect(PdfReaderPage, &PdfReaderWidget::backRequested, this, [this]() {
+        stack->setCurrentWidget(pdfReturnPage ? pdfReturnPage : static_cast<QWidget*>(HomePage));
     });
 
     stack->setCurrentWidget(LoginPage);
@@ -191,6 +204,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(LibraryPage, &PersonalLibraryWidget::backToHomeRequested, this, [this]() {
         stack->setCurrentWidget(HomePage);
+    });
+
+    connect(LibraryPage, &PersonalLibraryWidget::readBookRequested, this, [this](const Book &book) {
+        pdfReturnPage = LibraryPage;
+        PdfReaderPage->openBook(book);
+        stack->setCurrentWidget(PdfReaderPage);
     });
 
     connect(LoginPage, &login::GoToSignUpPublisher, this, [this]() {

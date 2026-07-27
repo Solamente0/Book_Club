@@ -20,6 +20,7 @@
 #include "publisherdashboardwidget.h"
 #include "publishermanager.h"
 #include "adminpanelwidget.h"
+#include "pdfreaderwidget.h"
 
 class MainWindow : public QWidget
 {
@@ -50,5 +51,7 @@ private:
     AdminLoginWidget *AdminLoginPage;
     NotificationWidget *NotificationPage;
     AdminPanelWidget *AdminPanelPage;
+    PdfReaderWidget *PdfReaderPage;
+    QWidget *pdfReturnPage = nullptr;
 };
 #endif // MAINWINDOW_H

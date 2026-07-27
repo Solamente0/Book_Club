@@ -1,3 +1,5 @@
+qt_standard_project_setup()
+
 add_executable(BookClubServer
     Database.h
     Database.cpp
@@ -57,3 +59,16 @@ target_link_libraries(BookClubServer PRIVATE
     Qt6::Sql
     Qt6::Widgets
 )
+
+install(TARGETS BookClubServer
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+qt_generate_deploy_app_script(
+    TARGET BookClubServer
+    OUTPUT_SCRIPT server_deploy_script
+    NO_UNSUPPORTED_PLATFORM_ERROR
+)
+
+install(SCRIPT ${server_deploy_script})
